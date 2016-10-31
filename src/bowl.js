@@ -69,9 +69,17 @@
         return promise;
       };
       this.ingredients.forEach(item => {
-        fetch(item.path).then(data => {
-          this.appendScript(data.content);
-        });
+        let local = localStorage.getItem(item.key);
+        if (local) {
+          local = JSON.parse(local);
+          this.appendScript(local.content);
+        } else {
+          fetch(item.path).then(data => {
+            item.content = data.content;
+            this.appendScript(data.content);
+            localStorage.setItem(item.key, JSON.stringify(item));
+          });
+        }
       });
     }
   }
