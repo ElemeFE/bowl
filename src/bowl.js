@@ -1,4 +1,7 @@
 (function(win, doc) {
+  let isObject = obj => {
+    return Object.prototype.toString.call(obj) === '[object Object]';
+  };
   class Bowl {
     constructor() {
       this.timeout = 60000;
@@ -11,12 +14,14 @@
       let handle = obj => {
         if (!obj.url) return;
         const now = new Date();
-        obj.key = obj.key ? obj.key : obj.url;
+        const isAbsolute = /^(https?|\/\/)/.test(obj.url);
+        obj.key = obj.key || obj.url;
         obj.expire = obj.expire ?
           obj.expire :
           (now + 50 * 24 * 3600 * 1000);
-        obj.path = location.href + obj.url.replace(/^\/+/, '');
-
+        obj.url = isAbsolute ?
+          obj.url :
+          `${win.location.href}${obj.url.replace(new RegExp('^\/*'), '')}`;
         self.ingredients.push(obj);
       };
 
@@ -26,20 +31,20 @@
     normalInject() {
       this.ingredients.forEach(item => {
         let script = doc.createElement('script');
-        script.src = item.path;
+        script.src = item.url;
         doc.getElementsByTagName('body')[0].appendChild(script);
       });
     }
 
     appendScript(content) {
-      let script = doc.createElement('script');
+      const script = doc.createElement('script');
       script.defer = true;
       script.text = content;
       doc.getElementsByTagName('head')[0].appendChild(script);
     }
 
     inject() {
-      let self = this;
+      const self = this;
       if (!win.localStorage || !win.Promise) {
         this.normalInject();
         return;
@@ -74,13 +79,20 @@
           local = JSON.parse(local);
           this.appendScript(local.content);
         } else {
-          fetch(item.path).then(data => {
+          fetch(item.url).then(data => {
             item.content = data.content;
             this.appendScript(data.content);
             localStorage.setItem(item.key, JSON.stringify(item));
           });
         }
       });
+    }
+
+    remove(key) {
+      key = isObject(key) ? key.key : key;
+      const index = this.ingredients.findIndex(item => item.key === key);
+      this.ingredients.splice(index, 1);
+      localStorage.removeItem(key);
     }
   }
 
