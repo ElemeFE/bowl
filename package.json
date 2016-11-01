@@ -1,0 +1,27 @@
+{
+  "name": "bowl.js",
+  "version": "0.0.1",
+  "description": "static resources front-end storage solving strategy",
+  "main": "lib/bowl.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "rm -rf lib && babel src -d lib -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/classicemi/bowl.js.git"
+  },
+  "author": "classicemi <wushuang_1227@163.com> (https://github.com/classicemi)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/classicemi/bowl.js/issues"
+  },
+  "homepage": "https://github.com/classicemi/bowl.js#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0"
+  }
+}
