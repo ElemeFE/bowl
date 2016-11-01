@@ -7,7 +7,7 @@ npm install bowl.js
 ```
 then insert an `script` tag to your page(`head` tag is recommended):
 ``` html
-<script src="path/to/the/script"></script>
+<script src="node_modules/bowl.js/lib/bowl.js"></script>
 ```
 
 ## API
