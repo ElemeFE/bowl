@@ -1,13 +1,14 @@
 {
   "name": "bowl.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "static resources front-end storage solving strategy",
   "main": "lib/bowl.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "build": "rm -rf lib && node build/build.js",
+    "dev": "TARGET=dev rollup -w -c build/config.js",
+    "build": "TARGET=production rm -rf lib && node build/build.js",
     "test": "karma start build/karma.config.js"
   },
   "repository": {
@@ -31,6 +32,7 @@
     "karma-webpack": "^1.8.0",
     "rollup": "^0.36.3",
     "rollup-plugin-buble": "^0.14.0",
+    "rollup-watch": "^2.5.0",
     "uglify-js": "^2.7.4",
     "webpack": "^1.13.3"
   }

@@ -1,6 +1,6 @@
 const path = require('path');
 const buble = require('rollup-plugin-buble');
-const version = require('../package.json').version
+const version = require('../package.json').version;
 
 const banner =
 `/*
@@ -9,16 +9,32 @@ const banner =
  * Released under the MIT license.
  */`;
 
-const config = {
-  entry: path.resolve(__dirname, '../src/index.js'),
-  dest: path.resolve(__dirname, '../lib/bowl.js'),
-  format: 'umd',
-  banner,
-  moduleName: 'bowl',
-  plugins: [
-    buble()
-  ]
+const configs = {
+  'dev': {
+    entry: path.resolve(__dirname, '../src/index.js'),
+    dest: path.resolve(__dirname, '../lib/bowl.js'),
+    format: 'umd',
+    banner,
+    moduleName: 'bowl',
+    plugins: [
+      buble()
+    ]
+  },
+  'production': {
+    entry: path.resolve(__dirname, '../src/index.js'),
+    dest: path.resolve(__dirname, '../lib/bowl.js'),
+    format: 'umd',
+    banner,
+    moduleName: 'bowl',
+    plugins: [
+      buble()
+    ]
+  }
 };
 
-module.exports = config;
+if (process.env.TARGET) {
+  module.exports = configs[process.env.TARGET];
+} else {
+  module.exports = configs['production'];
+}
 
