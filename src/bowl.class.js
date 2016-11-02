@@ -23,15 +23,13 @@ export default class Bowl {
       self.ingredients.push(obj);
     };
 
-    opts.forEach(opt => handle(opt));
+    opts.map(opt => handle(opt));
   }
 
-  normalInject() {
-    this.ingredients.forEach(item => {
-      let script = document.createElement('script');
-      script.src = item.url;
-      document.getElementsByTagName('body')[0].appendChild(script);
-    });
+  normalInject(url) {
+    let script = document.createElement('script');
+    script.src = url;
+    document.body.appendChild(script);
   }
 
   appendScript(content) {
@@ -44,7 +42,9 @@ export default class Bowl {
   inject() {
     const self = this;
     if (!global.localStorage || !global.Promise) {
-      this.normalInject();
+      this.ingredients.forEach(item => {
+        this.normalInject(item.url);
+      });
       return;
     }
     let fetch = url => {
