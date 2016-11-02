@@ -14,7 +14,7 @@ export default class Bowl {
     let handle = obj => {
       if (!obj.url) return;
       const now = new Date().getTime();
-      const isUrl = util.isUrl(obj.url);
+      const isUrl = utils.isUrl(obj.url);
       obj.key = obj.key || obj.url;
       obj.expire = now + (obj.expire ? obj.expire : 100) * 3600 * 1000;
       obj.url = isUrl ?
