@@ -14,10 +14,10 @@ export default class Bowl {
     let handle = obj => {
       if (!obj.url) return;
       const now = new Date().getTime();
-      const isAbsolute = /^(https?|\/\/)/.test(obj.url);
+      const isUrl = util.isUrl(obj.url);
       obj.key = obj.key || obj.url;
       obj.expire = now + (obj.expire ? obj.expire : 100) * 3600 * 1000;
-      obj.url = isAbsolute ?
+      obj.url = isUrl ?
         obj.url :
         `${global.location.href}${obj.url.replace(new RegExp('^\/*'), '')}`;
       self.ingredients.push(obj);
