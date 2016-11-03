@@ -3,12 +3,35 @@
 
 ## Installation
 ``` shell
-npm install bowl.js
+$ npm install bowl.js
 ```
 then insert an `script` tag to your page(`head` tag is recommended):
 ``` html
 <script src="node_modules/bowl.js/lib/bowl.js"></script>
 ```
+
+## Development Setup
+After cloning the repo, run:
+```shell
+$ npm install
+```
+### Commonly used NPM scripts:
+```shell
+# watch and auto rebuild lib/bowl.js and lib/bowl.min.js
+$ npm run dev
+
+# watch and auto re-run unit tests in Chrome
+$ npm run test
+
+# build all dist files
+$ npm run build
+```
+
+## Project Structure
++ **`build`**: contains build-related configuration files.
++ **`lib`**: contains build files for distribution, after running **`test`** script, files in this directory will be updated as well.
++ **`test`**: contains all tests. The unit tests are written with [Jasmine](http://jasmine.github.io/2.5/introduction) and run with [Karma](http://karma-runner.github.io/1.0/index.html).
++ **`src`**: contains the source code, obviously. The codebase is written in ES2015.
 
 ## API
 `bowl.js` will add a property named `bowl` to the global object, which is `window` in browsers. `bowl` has several methods for you.
