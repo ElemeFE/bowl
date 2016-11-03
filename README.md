@@ -1,3 +1,5 @@
+<image src="https://github.com/classicemi/bowl.js/blob/develop/assets/logo.png?raw=true" width="128">
+
 # bowl.js
 **bowl.js** is a loader that caches scripts and stylesheets with localStorage. After receiving any scripts or stylesheets, this tiny JavaScript library will save them to the browser's localStorage. When the file is requested next time, bowl.js will read it from localStorage and inject it to the webpage.
 

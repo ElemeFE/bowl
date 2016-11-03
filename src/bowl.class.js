@@ -1,6 +1,7 @@
 import * as utils from './utils';
 
 let global = window;
+let prefix = 'bowl-';
 
 export default class Bowl {
   constructor() {
@@ -9,13 +10,20 @@ export default class Bowl {
   }
 
   add(opts) {
+    if (!utils.isArray(opts)) {
+      if (utils.isObject(opts)) {
+        opts = [ opts ];
+      } else {
+        return;
+      }
+    }
     let self = this;
 
     let handle = obj => {
       if (!obj.url) return;
       const now = new Date().getTime();
       const isUrl = utils.isUrl(obj.url);
-      obj.key = obj.key || obj.url;
+      obj.key = `${prefix}${obj.key || obj.url}`;
       obj.expire = now + (obj.expire ? obj.expire : 100) * 3600 * 1000;
       obj.url = isUrl ?
         obj.url :
@@ -23,7 +31,7 @@ export default class Bowl {
       self.ingredients.push(obj);
     };
 
-    opts.map(opt => handle(opt));
+    opts.forEach(opt => handle(opt));
   }
 
   normalInject(url) {
@@ -40,6 +48,7 @@ export default class Bowl {
   }
 
   inject() {
+    if (!this.ingredients.length) return;
     const self = this;
     if (!global.localStorage || !global.Promise) {
       this.ingredients.forEach(item => {
@@ -72,6 +81,10 @@ export default class Bowl {
       return promise;
     };
     this.ingredients.forEach(item => {
+      if (item.noCache) {
+        this.normalInject(item.url);
+        return;
+      }
       let local = localStorage.getItem(item.key);
       if (local) {
         local = JSON.parse(local);
@@ -87,9 +100,19 @@ export default class Bowl {
   }
 
   remove(key) {
-    key = utils.isObject(key) ? key.key : key;
+    if (!key) {
+      let keys = this.ingredients.map(item => item.key);
+      keys.forEach(key => this._removeStorage(key));
+      this.ingredients = [];
+    }
+    key = `${prefix}${utils.isObject(key) ? key.key : key}`;
     const index = this.ingredients.findIndex(item => item.key === key);
     this.ingredients.splice(index, 1);
     localStorage.removeItem(key);
   }
+
+  _removeStorage(key) {
+    localStorage.removeItem(key);
+  }
+
 };
