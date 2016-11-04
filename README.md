@@ -1,4 +1,10 @@
-<image src="https://github.com/classicemi/bowl.js/blob/develop/assets/logo.png?raw=true" width="128">
+<p align="center"><image src="https://github.com/classicemi/bowl.js/blob/develop/assets/logo.png?raw=true" width="128"></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/bowl.js"><img src="https://img.shields.io/npm/dt/bowl.js.svg" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/bowl.js"><img src="https://img.shields.io/npm/v/bowl.js.svg" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/bowl.js"><img src="https://img.shields.io/npm/l/bowl.js.svg" alt="License"></a>
+</p>
 
 # bowl.js
 **bowl.js** is a loader that caches scripts and stylesheets with localStorage. After receiving any scripts or stylesheets, this tiny JavaScript library will save them to the browser's localStorage. When the file is requested next time, bowl.js will read it from localStorage and inject it to the webpage.
@@ -44,6 +50,7 @@ $ npm run build
 + **url**(required): the URI of the script to be handled. Because of the CORS restrictions, the URI should be on the same origin as the caller. You can Either use an absolute address or a relative address. `bowl.js` converts all of them to absolute addresses.
 + **key**: the name for `bowl.js` to identify the script, if you don't specify this field, it defaults to the **url**.
 + **expire**: How log(in hours) before the cached item expires.
++ **noCache**: defaults to false. Bowl.js won't cache the resource if it's true.
 
 **Examples**
 ```javascript
@@ -61,6 +68,7 @@ this method triggers the handling of the scripts added by `bowl.add()` method. `
 *scripts:* an array of objects with the following fields:
 + **url**: url of the script you want to remove from the controlling scope of `bowl.js`.
 + **key**: id of the script to be removed.
+Parameter `scripts` is optional. When `scripts` is not not Provided, bowl.js will remove all the ingredients from `bowl` instance and local storage.
 
 ## License
 MIT

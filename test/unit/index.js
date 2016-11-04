@@ -38,22 +38,24 @@ describe('utils', () => {
 });
 
 describe('bowl instance', () => {
+  let bowl = new Bowl();
+
+  beforeEach(() => {
+    bowl = new Bowl();
+  });
 
   describe('ingredients', () => {
     it('add `scripts` to bowl.ingredient', () => {
-      let bowl = new Bowl();
       bowl.add({ url: 'foo/bar' });
       expect(bowl.ingredients.length).toBe(1);
     });
 
     it('converts url to key of the ingredient if not provided', () => {
-      let bowl = new Bowl();
       bowl.add({ url: 'foo/bar' });
       expect(bowl.ingredients[0].key).toBe('bowl-foo/bar');
     });
 
     it('jump out of `bowl.add` if the param is neither array nor object', () => {
-      let bowl = new Bowl();
       bowl.add('foo/bar');
       expect(bowl.ingredients.length).toBe(0);
     });
@@ -61,7 +63,6 @@ describe('bowl instance', () => {
 
   describe('remove method', () => {
     it('remove all ingredients if no params are provided', () => {
-      let bowl = new Bowl();
       bowl.add([
         { url: 'foo' },
         { url: 'bar' }
@@ -71,7 +72,6 @@ describe('bowl instance', () => {
     });
 
     it('remove the correct item(has the provided key) out of ingredients', () => {
-      let bowl = new Bowl();
       bowl.add([
         { url: 'foo' },
         { url: 'bar' }
@@ -79,6 +79,19 @@ describe('bowl instance', () => {
       bowl.remove('bar');
       expect(bowl.ingredients.length).toBe(1);
       expect(bowl.ingredients[0].key).toBe('bowl-foo');
+    });
+  });
+
+  describe('inject method', () => {
+    it('returns false if there is no ingredients', () => {
+      let bowl = new Bowl();
+      expect(bowl.inject()).toBe(false);
+    });
+
+    it('returns a promise if there is any ingredient', () => {
+      let bowl = new Bowl();
+      bowl.add({ url: 'foo/bar' });
+      expect(bowl.inject() instanceof Promise).toBe(true);
     });
   });
 

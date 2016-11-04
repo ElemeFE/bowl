@@ -48,8 +48,9 @@ export default class Bowl {
   }
 
   inject() {
-    if (!this.ingredients.length) return;
+    if (!this.ingredients.length) return false;
     const self = this;
+    let ingredientsPromises = [];
     if (!global.localStorage || !global.Promise) {
       this.ingredients.forEach(item => {
         this.normalInject(item.url);
@@ -81,22 +82,28 @@ export default class Bowl {
       return promise;
     };
     this.ingredients.forEach(item => {
-      if (item.noCache) {
-        this.normalInject(item.url);
-        return;
-      }
-      let local = localStorage.getItem(item.key);
-      if (local) {
-        local = JSON.parse(local);
-        this.appendScript(local.content);
-      } else {
-        fetch(item.url).then(data => {
-          item.content = data.content;
-          this.appendScript(data.content);
-          localStorage.setItem(item.key, JSON.stringify(item));
-        });
-      }
+      ingredientsPromises.push(function(resolve, reject) {
+        if (item.noCache) {
+          this.normalInject(item.url);
+          resolve();
+          return;
+        }
+        let local = localStorage.getItem(item.key);
+        if (local) {
+          local = JSON.parse(local);
+          this.appendScript(local.content);
+          resolve();
+        } else {
+          fetch(item.url).then(data => {
+            item.content = data.content;
+            this.appendScript(data.content);
+            localStorage.setItem(item.key, JSON.stringify(item));
+            resolve();
+          });
+        }
+      });
     });
+    return Promise.all(ingredientsPromises);
   }
 
   remove(key) {
