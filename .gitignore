@@ -3,4 +3,4 @@ node_modules
 index.html
 scripts
 
-e2e/bowl.js
+test/e2e/bowl.js
