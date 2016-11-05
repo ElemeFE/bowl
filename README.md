@@ -46,6 +46,7 @@ $ npm run build
 
 ### `bowl.add`
 `bowl.add(scripts)`
+
 *scripts:* an array of objects with the following fields:
 + **url**(required): the URI of the script to be handled. Because of the CORS restrictions, the URI should be on the same origin as the caller. You can Either use an absolute address or a relative address. `bowl.js` converts all of them to absolute addresses.
 + **key**: the name for `bowl.js` to identify the script, if you don't specify this field, it defaults to the **url**.
@@ -55,12 +56,13 @@ $ npm run build
 **Examples**
 ```javascript
 bowl.add([
-  { url: '/main.js', key: 'main', expires: 10 }
+  { url: '/main.js', key: 'main', expire: 10 }
 ]);
 ```
 
 ### `bowl.inject`
 `bowl.inject()`
+
 this method triggers the handling of the scripts added by `bowl.add()` method. `bowl.js` will check if the script has been stored in the localStorage and is not expired. If not, bowl will fetch it from the server and save it to cache(localStorage).
 
 ### `bowl.remove`
@@ -68,6 +70,8 @@ this method triggers the handling of the scripts added by `bowl.add()` method. `
 *scripts:* an array of objects with the following fields:
 + **url**: url of the script you want to remove from the controlling scope of `bowl.js`.
 + **key**: id of the script to be removed.
+
+`bowl.remove()`
 Parameter `scripts` is optional. When `scripts` is not not Provided, bowl.js will remove all the ingredients from `bowl` instance and local storage.
 
 ## License

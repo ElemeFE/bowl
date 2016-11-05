@@ -12,10 +12,10 @@ const banner =
 const configs = {
   'dev': {
     entry: path.resolve(__dirname, '../src/index.js'),
-    dest: path.resolve(__dirname, '../lib/bowl.js'),
+    dest: path.resolve(__dirname, '../test/e2e/bowl.js'),
     format: 'umd',
     banner,
-    moduleName: 'bowl',
+    moduleName: 'Bowl',
     plugins: [
       buble()
     ]

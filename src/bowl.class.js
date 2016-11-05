@@ -20,15 +20,17 @@ export default class Bowl {
     let self = this;
 
     let handle = obj => {
+      let ingredient = {};
       if (!obj.url) return;
       const now = new Date().getTime();
       const isUrl = utils.isUrl(obj.url);
-      obj.key = `${prefix}${obj.key || obj.url}`;
-      obj.expire = now + (obj.expire ? obj.expire : 100) * 3600 * 1000;
-      obj.url = isUrl ?
+      ingredient.key = `${prefix}${obj.key || obj.url}`;
+      ingredient.expireAfter = now + (obj.expireAfter ? obj.expireAfter : 100) * 3600 * 1000;
+      ingredient.expireWhen = obj.expireWhen ? obj.expireWhen : null;
+      ingredient.url = isUrl ?
         obj.url :
-        `${global.location.href}${obj.url.replace(new RegExp('^\/*'), '')}`;
-      self.ingredients.push(obj);
+        `${global.location.origin}/${obj.url.replace(new RegExp('^\/*'), '')}`;
+      self.ingredients.push(ingredient);
     };
 
     opts.forEach(opt => handle(opt));
@@ -82,7 +84,7 @@ export default class Bowl {
       return promise;
     };
     this.ingredients.forEach(item => {
-      ingredientsPromises.push(function(resolve, reject) {
+      ingredientsPromises.push(new Promise((resolve, reject) => {
         if (item.noCache) {
           this.normalInject(item.url);
           resolve();
@@ -101,7 +103,7 @@ export default class Bowl {
             resolve();
           });
         }
-      });
+      }));
     });
     return Promise.all(ingredientsPromises);
   }

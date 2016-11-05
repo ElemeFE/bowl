@@ -1,6 +1,6 @@
 {
   "name": "bowl.js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "static resources front-end storage solving strategy",
   "main": "lib/bowl.js",
   "directories": {
@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "TARGET=dev rollup -w -c build/config.js",
     "build": "TARGET=production rm -rf lib && node build/build.js",
-    "test": "karma start build/karma.config.js"
+    "test:unit": "karma start build/karma.config.js"
   },
   "repository": {
     "type": "git",
