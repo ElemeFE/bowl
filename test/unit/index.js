@@ -84,14 +84,14 @@ describe('bowl instance', () => {
 
   describe('inject method', () => {
     it('returns false if there is no ingredients', () => {
-      let bowl = new Bowl();
       expect(bowl.inject()).toBe(false);
     });
 
-    it('returns a promise if there is any ingredient', () => {
-      let bowl = new Bowl();
+    it('returns a promise if there is any ingredient', done => {
       bowl.add({ url: 'foo/bar' });
-      expect(bowl.inject() instanceof Promise).toBe(true);
+      bowl.inject().then(() => {
+        done();
+      });
     });
   });
 

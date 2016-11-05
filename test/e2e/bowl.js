@@ -1,12 +1,12 @@
 /*
- * bowl.js v0.0.3
+ * bowl.js v0.0.4
  * (c) 2016-2016 classicemi
  * Released under the MIT license.
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global.bowl = factory());
+  (global.Bowl = factory());
 }(this, (function () { 'use strict';
 
 /**
@@ -115,18 +115,16 @@ Bowl$1.prototype.inject = function inject () {
     return promise;
   };
   this.ingredients.forEach(function (item) {
-    ingredientsPromises.push(function(resolve, reject) {
-        var this$1 = this;
-
+    ingredientsPromises.push(new Promise(function (resolve, reject) {
       if (item.noCache) {
-        this.normalInject(item.url);
+        this$1.normalInject(item.url);
         resolve();
         return;
       }
       var local = localStorage.getItem(item.key);
       if (local) {
         local = JSON.parse(local);
-        this.appendScript(local.content);
+        this$1.appendScript(local.content);
         resolve();
       } else {
         fetch(item.url).then(function (data) {
@@ -136,7 +134,7 @@ Bowl$1.prototype.inject = function inject () {
           resolve();
         });
       }
-    });
+    }));
   });
   return Promise.all(ingredientsPromises);
 };
