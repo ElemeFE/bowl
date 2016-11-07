@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "dev": "TARGET=dev rollup -w -c build/config.js",
+    "dev": "TARGET=dev rollup -w -c build/config.js & node node_modules/.bin/http-server test/e2e",
     "build": "TARGET=production rm -rf lib && node build/build.js",
     "test:unit": "karma start build/karma.config.js"
   },
@@ -25,6 +25,7 @@
     "babel-cli": "^6.18.0",
     "babel-loader": "^6.2.7",
     "babel-preset-es2015": "^6.18.0",
+    "http-server": "^0.9.0",
     "jasmine": "^2.5.2",
     "karma": "^1.3.0",
     "karma-chrome-launcher": "^2.0.0",

@@ -1,6 +1,5 @@
 *.swp
 node_modules
-index.html
-scripts
+.idea
 
 test/e2e/bowl.js
