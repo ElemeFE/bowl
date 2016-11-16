@@ -66,8 +66,11 @@ bowl.add([
 this method triggers the handling of the scripts added by `bowl.add()` method. `bowl.js` will check if the script has been stored in the localStorage and is not expired. If not, bowl will fetch it from the server and save it to cache(localStorage).
 
 ### `bowl.remove`
-`bowl.remove(scripts)`
-*scripts:* an array of objects with the following fields:
+`bowl.remove(scripts)`  
+*scripts:* this parameter supports two types:  
+*String:* indicates the key of the ingredient to be removed.
+
+*Object:* an object with the following fields:
 + **url**: url of the script you want to remove from the controlling scope of `bowl.js`.
 + **key**: id of the script to be removed.
 
