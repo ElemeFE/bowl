@@ -21,7 +21,7 @@ then insert an `script` tag to your page(`head` tag is recommended):
 ## Development Setup
 After cloning the repo, run:
 ```shell
-$ npm install
+$ yarn install # yep, yarn is recommended. :)
 ```
 ### Commonly used NPM scripts:
 ```shell
