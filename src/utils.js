@@ -6,6 +6,13 @@ export function isObject(obj) {
 };
 
 /**
+ * check if the argument is an instance of String
+ */
+export function isString(str) {
+  return Object.prototype.toString.call(str) === '[object String]';
+}
+
+/**
  * check if the argument is an instance of Array
  */
 export function isArray(arr) {

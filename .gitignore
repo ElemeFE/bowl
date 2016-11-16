@@ -3,3 +3,4 @@ node_modules
 .idea
 
 test/e2e/bowl.js
+notes.md

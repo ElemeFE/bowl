@@ -9,6 +9,9 @@ export default class Bowl {
     this.ingredients = [];
   }
 
+  /**
+   * @param {Object, Array} items to be cached, wrapped in supported object structure
+   */
   add(opts) {
     if (!utils.isArray(opts)) {
       if (utils.isObject(opts)) {
@@ -20,7 +23,7 @@ export default class Bowl {
     let self = this;
 
     let handle = obj => {
-      let ingredient = {};
+      const ingredient = {};
       if (!obj.url) return;
       const now = new Date().getTime();
       const isUrl = utils.isUrl(obj.url);
@@ -108,13 +111,19 @@ export default class Bowl {
     return Promise.all(ingredientsPromises);
   }
 
-  remove(key) {
-    if (!key) {
+  remove(rule) {
+    if (!rule) {
       let keys = this.ingredients.map(item => item.key);
       keys.forEach(key => this._removeStorage(key));
       this.ingredients = [];
+      return;
     }
-    key = `${prefix}${utils.isObject(key) ? key.key : key}`;
+    let key = null;
+    if (utils.isString(rule)) {
+      key = `${prefix}${rule}`;
+    } else if (utils.isObject(rule)) {
+      key = `${prefix}${rule.key ? rule.key : rule.url ? rule.url : ''}`;
+    }
     const index = this.ingredients.findIndex(item => item.key === key);
     this.ingredients.splice(index, 1);
     localStorage.removeItem(key);
