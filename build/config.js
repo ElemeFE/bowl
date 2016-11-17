@@ -1,6 +1,6 @@
 const path = require('path');
 const buble = require('rollup-plugin-buble');
-const version = require('../package.json').version;
+const version = process.env.VERSION || require('../package.json').version;
 
 const banner =
 `/*
@@ -37,4 +37,3 @@ if (process.env.TARGET) {
 } else {
   module.exports = configs['production'];
 }
-

@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "TARGET=dev rollup -w -c build/config.js & node node_modules/.bin/http-server test/e2e",
     "build": "TARGET=production rm -rf lib && node build/build.js",
-    "test:unit": "karma start build/karma.config.js"
+    "test:unit": "karma start build/karma.config.js",
+    "release": "bash build/release.sh"
   },
   "repository": {
     "type": "git",

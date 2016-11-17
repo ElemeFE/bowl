@@ -29,7 +29,7 @@ $ yarn install # yep, yarn is recommended. :)
 $ npm run dev
 
 # watch and auto re-run unit tests in Chrome
-$ npm run test
+$ npm run test:unit
 
 # build all dist files
 $ npm run build
