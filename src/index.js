@@ -1,5 +1,3 @@
-import Bowl from './bowl.class';
+import Bowl from './bowl.class'
 
-// const bowl = new Bowl();
-
-export default Bowl;
+export default Bowl

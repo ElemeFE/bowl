@@ -74,7 +74,7 @@ this method triggers the handling of the scripts added by `bowl.add()` method. `
 + **url**: url of the script you want to remove from the controlling scope of `bowl.js`.
 + **key**: id of the script to be removed.
 
-`bowl.remove()`
+`bowl.remove()`  
 Parameter `scripts` is optional. When `scripts` is not not Provided, bowl.js will remove all the ingredients from `bowl` instance and local storage.
 
 ## License
