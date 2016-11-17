@@ -44,6 +44,19 @@ $ npm run build
 ## API
 `bowl.js` will add a property named `bowl` to the global object, which is `window` in browsers. `bowl` has several methods for you.
 
+### `bowl.configure`
+`bowl.configure(config)`
+
+*config:* an object contains custom settings of bowl instance, supported settings are:
++ **timeout**: time limit of fetching resources(in milliseconds).
+
+**Examples**
+```javascript
+bowl.configure({
+  timeout: 10000
+})
+```
+
 ### `bowl.add`
 `bowl.add(scripts)`
 
@@ -57,7 +70,7 @@ $ npm run build
 ```javascript
 bowl.add([
   { url: '/main.js', key: 'main', expire: 10 }
-]);
+])
 ```
 
 ### `bowl.inject`
@@ -74,7 +87,7 @@ this method triggers the handling of the scripts added by `bowl.add()` method. `
 + **url**: url of the script you want to remove from the controlling scope of `bowl.js`.
 + **key**: id of the script to be removed.
 
-`bowl.remove()`
+`bowl.remove()`  
 Parameter `scripts` is optional. When `scripts` is not not Provided, bowl.js will remove all the ingredients from `bowl` instance and local storage.
 
 ## License
