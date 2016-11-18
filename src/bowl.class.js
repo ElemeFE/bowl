@@ -7,7 +7,7 @@ export default class Bowl {
   constructor() {
     this.config = {
       timeout: 60000,
-      expireAfter: 100,
+      expireAfter: null,
       expireWhen: null
     }
     this.ingredients = []
@@ -32,13 +32,18 @@ export default class Bowl {
       }
     }
 
-    function makeIngredient(obj) {
+    /**
+     * take options and return corresponding ingredient
+     */
+    let makeIngredient = obj => {
+      obj = utils.merge(this.config, obj, true)
       const ingredient = {}
       const now = new Date().getTime()
       const isUrl = utils.isUrl(obj.url)
       ingredient.key = `${prefix}${obj.key || obj.url}`
-      ingredient.expireAfter = now + (obj.expireAfter ? obj.expireAfter : 100) * 3600 * 1000
-      ingredient.expireWhen = obj.expireWhen ? obj.expireWhen : null
+      ingredient.expire = obj.expireAfter ? (new Date()).getTime() + obj.expireAfter : null
+      // overwrites `expireAfter` if `expireWhen` is provided
+      ingredient.expire = obj.expireWhen ? obj.expireWhen : ingredient.expire
       ingredient.noCache = !!obj.noCache
       ingredient.url = isUrl ?
         obj.url :
@@ -80,6 +85,7 @@ export default class Bowl {
   inject() {
     if (!this.ingredients.length) return false
     const self = this
+    const current = new Date().getTime()
     let ingredientsPromises = []
     if (!global.localStorage || !global.Promise) {
       this.ingredients.forEach(item => {
@@ -87,6 +93,7 @@ export default class Bowl {
       })
       return
     }
+
     let fetch = url => {
       let xhr = new XMLHttpRequest()
       let promise = new Promise((resolve, reject) => {
@@ -111,6 +118,18 @@ export default class Bowl {
       xhr.send()
       return promise
     }
+
+    let _inject = (item, resolve, reject) => {
+      fetch(item.url).then(data => {
+        item.content = data.content
+        this.appendScript(data.content)
+        localStorage.setItem(item.key, JSON.stringify(item))
+        resolve()
+      }).catch(err => {
+        reject()
+      })
+    }
+
     this.ingredients.forEach(item => {
       ingredientsPromises.push(new Promise((resolve, reject) => {
         if (item.noCache) {
@@ -118,17 +137,24 @@ export default class Bowl {
           resolve()
           return
         }
+
         let local = JSON.parse(localStorage.getItem(item.key))
-        if (local && (local.url === item.url)) {
+        // check local ingredient's expire property
+        if (local && local.expire) {
+          if (current < local.expire) {
+            resolve()
+            return
+          } else {
+            _inject(item, resolve, reject)
+            return
+          }
+        }
+
+        if (local && (local.url === item.url)) { // cache hit!
           this.appendScript(local.content)
           resolve()
-        } else {
-          fetch(item.url).then(data => {
-            item.content = data.content
-            this.appendScript(data.content)
-            localStorage.setItem(item.key, JSON.stringify(item))
-            resolve()
-          })
+        } else { // fetch resource and cache ingredient
+          _inject(item, resolve, reject)
         }
       }))
     })
