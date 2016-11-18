@@ -39,6 +39,7 @@ export default class Bowl {
       ingredient.key = `${prefix}${obj.key || obj.url}`
       ingredient.expireAfter = now + (obj.expireAfter ? obj.expireAfter : 100) * 3600 * 1000
       ingredient.expireWhen = obj.expireWhen ? obj.expireWhen : null
+      ingredient.noCache = !!obj.noCache
       ingredient.url = isUrl ?
         obj.url :
         `${global.location.origin}/${obj.url.replace(new RegExp('^\/*'), '')}`
