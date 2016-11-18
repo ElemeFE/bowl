@@ -18,6 +18,20 @@ then insert an `script` tag to your page(`head` tag is recommended):
 <script src="node_modules/bowl.js/lib/bowl.js"></script>
 ```
 
+## Demo
+For those scripts that need to be cached, you do not have to insert `script` tags to the pages. Just write a little piece of JavaScript and **bowl** will take care of it.
+```html
+<script>
+var bowl = new Bowl()
+bowl.add([
+  { url: 'dist/vendor.[hash].js', key: 'vendor' },
+  { url: 'dist/app.[hash].js', key: 'app' }
+])
+bowl.inject()
+</script>
+```
+**bowl** will add these scripts to cache(currently localStorage). whenever the hashes in the filenames get modified, bowl will update the files in the cache. For more useful functions of **bowl.js**, just checkout the API document.
+
 ## Development Setup
 After cloning the repo, run:
 ```shell
@@ -63,20 +77,19 @@ bowl.configure({
 *scripts:* an array of objects with the following fields:
 + **url**(required): the URI of the script to be handled. Because of the CORS restrictions, the URI should be on the same origin as the caller. You can Either use an absolute address or a relative address. `bowl.js` converts all of them to absolute addresses.
 + **key**: the name for `bowl.js` to identify the script, if you don't specify this field, it defaults to the **url**.
-+ **expire**: How log(in hours) before the cached item expires.
 + **noCache**: defaults to false. Bowl.js won't cache the resource if it's true.
 
 **Examples**
 ```javascript
 bowl.add([
-  { url: '/main.js', key: 'main', expire: 10 }
+  { url: '/main.js', key: 'main' }
 ])
 ```
 
 ### `bowl.inject`
 `bowl.inject()`
 
-this method triggers the handling of the scripts added by `bowl.add()` method. `bowl.js` will check if the script has been stored in the localStorage and is not expired. If not, bowl will fetch it from the server and save it to cache(localStorage).
+this method triggers the handling of the scripts added by `bowl.add()` method. `bowl.js` will check if the script has been stored in the localStorage. If not, bowl will fetch it from the server and save it to cache(localStorage).
 
 ### `bowl.remove`
 `bowl.remove(scripts)`  

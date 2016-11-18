@@ -15,7 +15,7 @@ describe('bowl instance', () => {
   })
 
   describe('add method', () => {
-    it('add `scripts` to bowl.ingredient', () => {
+    it('adds `scripts` to bowl.ingredient', () => {
       bowl.add({ url: 'assets/app.js' })
       expect(bowl.ingredients.length).to.be(1)
     })
@@ -25,14 +25,21 @@ describe('bowl instance', () => {
       expect(bowl.ingredients[0].key).to.be('bowl-assets/app.js')
     })
 
-    it('jump out of `bowl.add` if the param is neither array nor object', () => {
+    it('jumps out of `bowl.add` if the param is neither array nor object', () => {
       bowl.add('assets/app.js')
       expect(bowl.ingredients.length).to.be(0)
     })
 
-    it('use `key` if provided', () => {
+    it('uses `key` if provided', () => {
       bowl.add({ url: 'assets/app.js', key: 'app' })
       expect(bowl.ingredients[0].key).to.be('bowl-app')
+    })
+
+    it('overwrites the older ingredient if two ingredients have a same key', () => {
+      bowl.add({ url: 'assets/app.js', key: 'test' })
+      bowl.add({ url: 'assets/foo.js', key: 'test' })
+      expect(bowl.ingredients.length).to.be(1)
+      expect(/foo\.js$/.test(bowl.ingredients[0].url)).to.be(true)
     })
   })
 
@@ -96,6 +103,10 @@ describe('bowl instance', () => {
   describe('inject method', () => {
     beforeEach(() => {
       localStorage.clear()
+      const scripts = document.querySelectorAll('head script[defer]')
+      scripts.forEach(script => {
+        script.remove()
+      })
     })
 
     it('returns false if there is no ingredients', () => {
@@ -135,6 +146,47 @@ describe('bowl instance', () => {
         }
       })
     })
+
+    it('insert all ingredients to the page', done => {
+      bowl.add([
+        { url: 'assets/app.js' }
+      ])
+      bowl.inject().then(() => {
+        const script = document.querySelector('head script[defer]')
+        const text = script.innerText
+
+        if (text.trim() === 'console.log(\'app.js\')') {
+          done()
+        } else {
+          done(new Error())
+        }
+      })
+    });
   })
+
+  // describe('expire related properties', () => {
+  //   beforeEach(() => {
+  //     localStorage.clear()
+  //     const scripts = document.querySelectorAll('head script[defer]')
+  //     scripts.forEach(script => {
+  //       script.remove()
+  //     })
+  //   })
+  //
+  //   it('ingredients expires after `expireAfter` time passed', done => {
+  //     bowl.add({
+  //       url: 'assets/app.js',
+  //       expireAfter: 5 / 3600,
+  //       key: 'test'
+  //     })
+  //     bowl.inject().then(() => {
+  //       const scripts = document.querySelectorAll('head script[defer]')
+  //       if (scripts.length !== 1) {
+  //         done(new Error('wrong injected scripts number'))
+  //         return
+  //       }
+  //     })
+  //   })
+  // });
 
 })
