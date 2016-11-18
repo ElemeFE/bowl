@@ -25,7 +25,7 @@ const configs = {
     dest: path.resolve(__dirname, '../lib/bowl.js'),
     format: 'umd',
     banner,
-    moduleName: 'bowl',
+    moduleName: 'Bowl',
     plugins: [
       buble()
     ]

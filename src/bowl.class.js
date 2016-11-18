@@ -6,7 +6,9 @@ let prefix = 'bowl-'
 export default class Bowl {
   constructor() {
     this.config = {
-      timeout: 60000
+      timeout: 60000,
+      expireAfter: 100,
+      expireWhen: null
     }
     this.ingredients = []
   }
@@ -29,10 +31,8 @@ export default class Bowl {
         return
       }
     }
-    let self = this
 
-    let handle = obj => {
-      if (!obj.url) return
+    function makeIngredient(obj) {
       const ingredient = {}
       const now = new Date().getTime()
       const isUrl = utils.isUrl(obj.url)
@@ -42,6 +42,21 @@ export default class Bowl {
       ingredient.url = isUrl ?
         obj.url :
         `${global.location.origin}/${obj.url.replace(new RegExp('^\/*'), '')}`
+      return ingredient
+    }
+
+    const self = this
+
+    let handle = obj => {
+      if (!obj.url) return
+      const ingredient = makeIngredient(obj)
+      const existingIndexFound = this.ingredients.findIndex(item => {
+        return item.key === ingredient.key
+      })
+      if (existingIndexFound > -1) {
+        this.ingredients.splice(existingIndexFound, 1, ingredient)
+        return
+      }
       self.ingredients.push(ingredient)
     }
 
@@ -102,9 +117,8 @@ export default class Bowl {
           resolve()
           return
         }
-        let local = localStorage.getItem(item.key)
-        if (local) {
-          local = JSON.parse(local)
+        let local = JSON.parse(localStorage.getItem(item.key))
+        if (local.url === item.url) {
           this.appendScript(local.content)
           resolve()
         } else {
