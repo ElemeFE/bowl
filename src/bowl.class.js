@@ -118,7 +118,6 @@ export default class Bowl {
           return
         }
         let local = JSON.parse(localStorage.getItem(item.key))
-        console.log(local)
         if (local && (local.url === item.url)) {
           this.appendScript(local.content)
           resolve()
