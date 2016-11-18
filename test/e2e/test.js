@@ -9,8 +9,8 @@ describe('bowl instance', () => {
     it('merge custom configure with the default configure by `config` method', () => {
       bowl.configure({
         timeout: 10000
-      });
-      expect(bowl.config.timeout).to.be(10000);
+      })
+      expect(bowl.config.timeout).to.be(10000)
     })
   })
 
@@ -161,32 +161,99 @@ describe('bowl instance', () => {
           done(new Error())
         }
       })
-    });
+    })
+
+    it('won\'t cache ingredient if it has `noCache` flag', () => {
+      bowl.add({ url: 'assets/app.js', key: 'app', noCache: true })
+      bowl.inject()
+      expect(localStorage.getItem('bowl-app')).to.be(null)
+    })
   })
 
-  // describe('expire related properties', () => {
-  //   beforeEach(() => {
-  //     localStorage.clear()
-  //     const scripts = document.querySelectorAll('head script[defer]')
-  //     scripts.forEach(script => {
-  //       script.remove()
-  //     })
-  //   })
-  //
-  //   it('ingredients expires after `expireAfter` time passed', done => {
-  //     bowl.add({
-  //       url: 'assets/app.js',
-  //       expireAfter: 5 / 3600,
-  //       key: 'test'
-  //     })
-  //     bowl.inject().then(() => {
-  //       const scripts = document.querySelectorAll('head script[defer]')
-  //       if (scripts.length !== 1) {
-  //         done(new Error('wrong injected scripts number'))
-  //         return
-  //       }
-  //     })
-  //   })
-  // });
+  describe('expire related properties', () => {
+    beforeEach(() => {
+      localStorage.clear()
+      const scripts = document.querySelectorAll('head script[defer]')
+      scripts.forEach(script => {
+        script.remove()
+      })
+    })
+
+    it('ingredients expires after `expireAfter` time passed', done => {
+      bowl.add({
+        url: 'assets/app.js',
+        expireAfter: 500,
+        key: 'test'
+      })
+      bowl.inject().then(() => {
+        const scripts = document.querySelectorAll('head script[defer]')
+        if (scripts.length !== 1) {
+          done(new Error('wrong injected scripts number'))
+          return
+        }
+        const originIngredient = JSON.parse(localStorage.getItem('bowl-test'))
+        const originExpire = originIngredient.expire
+        bowl.add({
+          url: 'assets/app.js',
+          expireAfter: 600,
+          key: 'test'
+        })
+        bowl.inject().then(() => {
+          const test = JSON.parse(localStorage.getItem('bowl-test'))
+          if (test.expire !== originExpire) {
+            done(new Error('ingredient shouldn\'t be replaced before `expireAfter` time'))
+          }
+        })
+        setTimeout(() => {
+          bowl.inject().then(() => {
+            const test = JSON.parse(localStorage.getItem('bowl-test'))
+            if (test.expire !== originExpire) {
+              done()
+            } else {
+              done(new Error('ingredient should be replaced after `expireAfter` time'))
+            }
+          })
+        }, 600)
+      })
+    })
+
+    it('ingredients expires after `expireWhen`', done => {
+      bowl.add({
+        url: 'assets/app.js',
+        expireWhen: (new Date()).getTime() + 500,
+        key: 'test'
+      })
+      bowl.inject().then(() => {
+        const scripts = document.querySelectorAll('head script[defer]')
+        if (scripts.length !== 1) {
+          done(new Error('wrong injected scripts number'))
+          return
+        }
+        const originIngredient = JSON.parse(localStorage.getItem('bowl-test'))
+        const originExpire = originIngredient.expire
+        bowl.add({
+          url: 'assets/app.js',
+          expireWhen: (new Date()).getTime() + 600,
+          key: 'test'
+        })
+        bowl.inject().then(() => {
+          const test = JSON.parse(localStorage.getItem('bowl-test'))
+          if (test.expire !== originExpire) {
+            done(new Error('ingredient shouldn\'t be replaced before `expireWhen`'))
+          }
+        })
+        setTimeout(() => {
+          bowl.inject().then(() => {
+            const test = JSON.parse(localStorage.getItem('bowl-test'))
+            if (test.expire !== originExpire) {
+              done()
+            } else {
+              done(new Error('ingredient should be replaced after `expireWhen`'))
+            }
+          })
+        }, 600)
+      })
+    })
+  })
 
 })
