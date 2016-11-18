@@ -26,7 +26,7 @@ export default class Bowl {
   add(opts) {
     if (!utils.isArray(opts)) {
       if (utils.isObject(opts)) {
-        opts = [ opts ]
+        opts = [opts]
       } else {
         return
       }
@@ -45,6 +45,7 @@ export default class Bowl {
       // overwrites `expireAfter` if `expireWhen` is provided
       ingredient.expire = obj.expireWhen ? obj.expireWhen : ingredient.expire
       ingredient.noCache = !!obj.noCache
+      ingredient.ext = obj.url.match(/.(\w+)$/)[1].trim()
       ingredient.url = isUrl ?
         obj.url :
         `${global.location.origin}/${obj.url.replace(new RegExp('^\/*'), '')}`
@@ -69,17 +70,40 @@ export default class Bowl {
     opts.forEach(opt => handle(opt))
   }
 
-  normalInject(url) {
-    let script = document.createElement('script')
-    script.src = url
-    document.body.appendChild(script)
+  injectCss(path) {
+    let link = null;
+    if (utils.isUrl(path)) {
+      link = document.createElement('link');
+      link.rel = 'stylesheet'
+      link.herf = path
+    } else {
+      link = document.createElement('style');
+      link.appendChild(document.createTextNode(path));
+    }
+    document.getElementsByTagName('head')[0].appendChild(link)
   }
 
-  appendScript(content) {
-    const script = document.createElement('script')
-    script.defer = true
-    script.text = content
-    document.getElementsByTagName('head')[0].appendChild(script)
+  injectJs(path) {
+    let script = document.createElement('script')
+    if (utils.isUrl(path)) {
+      script.src = path
+      document.body.appendChild(script)
+    } else {
+      script.defer = true
+      script.text = path
+      document.getElementsByTagName('head')[0].appendChild(script)
+    }
+  }
+
+  itemInject(ext, path) {
+    switch (ext) {
+      case 'css':
+        this.injectCss(path);
+        break;
+      case 'js':
+      default:
+        this.injectJs(path);
+    }
   }
 
   inject() {
@@ -89,7 +113,7 @@ export default class Bowl {
     let ingredientsPromises = []
     if (!global.localStorage || !global.Promise) {
       this.ingredients.forEach(item => {
-        this.normalInject(item.url)
+        this.itemInject(item.ext, item.url)
       })
       return
     }
@@ -110,7 +134,7 @@ export default class Bowl {
           }
         }
       })
-      setTimeout(function() {
+      setTimeout(function () {
         if (xhr.readyState < 4) {
           xhr.abort()
         }
@@ -122,7 +146,7 @@ export default class Bowl {
     let _inject = (item, resolve, reject) => {
       fetch(item.url).then(data => {
         item.content = data.content
-        this.appendScript(data.content)
+        this.itemInject(item.ext, data.content)
         localStorage.setItem(item.key, JSON.stringify(item))
         resolve()
       }).catch(err => {
@@ -133,12 +157,13 @@ export default class Bowl {
     this.ingredients.forEach(item => {
       ingredientsPromises.push(new Promise((resolve, reject) => {
         if (item.noCache) {
-          this.normalInject(item.url)
+          this.itemInject(item.ext, item.url)
           resolve()
           return
         }
 
         let local = JSON.parse(localStorage.getItem(item.key))
+
         // check local ingredient's expire property
         if (local && local.expire) {
           if (current < local.expire) {
@@ -151,7 +176,7 @@ export default class Bowl {
         }
 
         if (local && (local.url === item.url)) { // cache hit!
-          this.appendScript(local.content)
+          this.itemInject(local.ext, local.content)
           resolve()
         } else { // fetch resource and cache ingredient
           _inject(item, resolve, reject)
