@@ -1,6 +1,6 @@
 {
   "name": "bowl.js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "static resources front-end storage solving strategy",
   "main": "lib/bowl.js",
   "directories": {
