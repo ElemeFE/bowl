@@ -70,9 +70,9 @@ export default class Bowl {
     opts.forEach(opt => handle(opt))
   }
 
-  injectCss(path) {
+  injectCss(path, init) {
     let link = null;
-    if (utils.isUrl(path)) {
+    if (init) {
       link = document.createElement('link');
       link.rel = 'stylesheet'
       link.herf = path
@@ -83,9 +83,9 @@ export default class Bowl {
     document.getElementsByTagName('head')[0].appendChild(link)
   }
 
-  injectJs(path) {
+  injectJs(path, init) {
     let script = document.createElement('script')
-    if (utils.isUrl(path)) {
+    if (init) {
       script.src = path
       document.body.appendChild(script)
     } else {
@@ -95,14 +95,14 @@ export default class Bowl {
     }
   }
 
-  itemInject(ext, path) {
+  itemInject(ext, path, init) {
     switch (ext) {
       case 'css':
-        this.injectCss(path);
+        this.injectCss(path, init);
         break;
       case 'js':
       default:
-        this.injectJs(path);
+        this.injectJs(path, init);
     }
   }
 
@@ -113,7 +113,7 @@ export default class Bowl {
     let ingredientsPromises = []
     if (!global.localStorage || !global.Promise) {
       this.ingredients.forEach(item => {
-        this.itemInject(item.ext, item.url)
+        this.itemInject(item.ext, item.url, true)
       })
       return
     }
@@ -157,7 +157,7 @@ export default class Bowl {
     this.ingredients.forEach(item => {
       ingredientsPromises.push(new Promise((resolve, reject) => {
         if (item.noCache) {
-          this.itemInject(item.ext, item.url)
+          this.itemInject(item.ext, item.url, true)
           resolve()
           return
         }
