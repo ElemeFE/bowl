@@ -86,4 +86,25 @@ describe('utils', () => {
     expect(result.baz.a).toBe(1)
     expect(result.baz.b).toBe(2)
   })
+
+  it('can tell if two urls are cross-origin', () => {
+    // TODO: make test urls host-depend free
+    const a = 'http://127.0.0.1:8080/assets/app.js'
+    const b = 'https://127.0.0.1:8080/assets/app.js'
+    const c = 'http://localhost:8080/assets/app.js'
+    const d = 'http://127.0.0.1/assets/app.js'
+    const e = 'http://127.0.0.1:8080/foo/app.js'
+    const f = '/assets/app.js'
+    const g = 'bowl.js.com/assets/app.js'
+    const h = 'http://bowl.js.com/assets/app.js'
+    const i = 'https://bowl.js.com/assets/app.js'
+
+    expect(utils.isCrossOrigin(a, b)).toBe(true)
+    expect(utils.isCrossOrigin(a, c)).toBe(true)
+    expect(utils.isCrossOrigin(a, d)).toBe(true)
+    expect(utils.isCrossOrigin(a, e)).toBe(false)
+    expect(utils.isCrossOrigin(a, f)).toBe(false)
+    expect(utils.isCrossOrigin(h, g)).toBe(false)
+    expect(utils.isCrossOrigin(i, g)).toBe(false)
+  })
 })

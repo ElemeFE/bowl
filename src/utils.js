@@ -73,3 +73,35 @@ export function merge(target, source, force = false) {
   }
   return result
 }
+
+/**
+ * test if two urls are cross-origin
+ */
+export function isCrossOrigin(hostUrl, targetUrl) {
+  const originRegExp = /^(https?:\/\/)?([^\/:]+)?:?(\d+)?/
+  const defaultProtocol = 'http://'
+  const defaultPort = '80'
+  const hostOrigin = hostUrl.match(originRegExp)
+  const targetOrigin = targetUrl.match(originRegExp)
+
+  // if urls don't have protocols, add default protocols to them
+  ;[hostOrigin[1], hostOrigin[2], hostOrigin[3]] = [
+    hostOrigin[1] ? hostOrigin[1] : defaultProtocol,
+    hostOrigin[2] ? hostOrigin[2] : location.hostname,
+    hostOrigin[3] ? hostOrigin[3] : defaultPort
+  ]
+  if (!targetOrigin[3]) {
+    if (targetOrigin[2]) {
+      targetOrigin[3] = defaultPort
+    } else {
+      targetOrigin[3] = hostOrigin[3]
+    }
+  }
+  ;[targetOrigin[1], targetOrigin[2]] = [
+    targetOrigin[1] ? targetOrigin[1] : hostOrigin[1],
+    targetOrigin[2] ? targetOrigin[2] : hostOrigin[2]
+  ]
+  hostOrigin[0] = `${hostOrigin[1]}${hostOrigin[2]}:${hostOrigin[3]}`
+  targetOrigin[0] = `${targetOrigin[1]}${targetOrigin[2]}:${targetOrigin[3]}`
+  return hostOrigin[0] !== targetOrigin[0]
+}

@@ -1,3 +1,5 @@
+window.aFlag = 0
+
 describe('bowl instance', () => {
   let bowl = new Bowl()
 
@@ -168,6 +170,20 @@ describe('bowl instance', () => {
       bowl.inject()
       expect(localStorage.getItem('bowl-app')).to.be(null)
     })
+
+    it('can fetch and save cross-origin ingredient to cache', done => {
+      const hostname = location.hostname
+      const targetHostName = hostname === '127.0.0.1' ? 'localhost' : '127.0.0.1'
+      bowl.add({ url: `http://${targetHostName}:8080/assets/a.js`, key: 'a' })
+      bowl.inject().then(() => {
+        if (window.aFlag === 1) {
+          window.aFlag = 0
+          done()
+        } else {
+          done(new Error())
+        }
+      })
+    });
   })
 
   describe('expire related properties', () => {

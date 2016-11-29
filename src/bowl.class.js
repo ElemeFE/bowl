@@ -1,4 +1,6 @@
 import * as utils from './utils'
+import scriptInjector from './injectors/script-injector'
+import cssInjector from './injectors/css-injector'
 
 let global = window
 let prefix = 'bowl-'
@@ -95,8 +97,8 @@ export default class Bowl {
     }
 
     let fetch = url => {
-      let xhr = new XMLHttpRequest()
-      let promise = new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      const promise = new Promise((resolve, reject) => {
         xhr.open('GET', url)
         xhr.onreadystatechange = () => {
           if (xhr.readyState === 4) {
@@ -119,15 +121,39 @@ export default class Bowl {
       return promise
     }
 
-    let _inject = (item, resolve, reject) => {
-      fetch(item.url).then(data => {
-        item.content = data.content
-        this.appendScript(data.content)
-        localStorage.setItem(item.key, JSON.stringify(item))
-        resolve()
-      }).catch(err => {
-        reject()
+    let crossOriginFetch = url => {
+      const script = document.createElement('script')
+      const promise = new Promise((resolve, reject) => {
+        script.src = url
+        script.defer = true
+        script.onload = function(e) {
+          resolve()
+        }
+        script.onerror = function(err) {
+          reject(new Error(err))
+        }
       })
+      document.getElementsByTagName('head')[0].appendChild(script)
+      return promise
+    }
+
+    let _inject = (item, resolve, reject) => {
+      if (utils.isCrossOrigin(location.origin, item.url)) {
+        crossOriginFetch(item.url).then(() => {
+          resolve()
+        }).catch(err => {
+          reject()
+        })
+      } else {
+        fetch(item.url).then(data => {
+          item.content = data.content
+          this.appendScript(data.content)
+          localStorage.setItem(item.key, JSON.stringify(item))
+          resolve()
+        }).catch(err => {
+          reject()
+        })
+      }
     }
 
     this.ingredients.forEach(item => {

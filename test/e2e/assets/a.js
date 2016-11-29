@@ -1,0 +1,1 @@
+window.aFlag = 1
