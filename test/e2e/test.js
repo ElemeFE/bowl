@@ -165,10 +165,15 @@ describe('bowl instance', () => {
       })
     })
 
-    it('won\'t cache ingredient if it has `noCache` flag', () => {
+    it('won\'t cache ingredient if it has `noCache` flag', (done) => {
       bowl.add({ url: 'assets/app.js', key: 'app', noCache: true })
-      bowl.inject()
-      expect(localStorage.getItem('bowl-app')).to.be(null)
+      bowl.inject().then(() => {
+        if (localStorage.getItem('bowl-app') === null) {
+          done()
+        } else {
+          done(new Error())
+        }
+      })
     })
 
     it('can fetch and save cross-origin ingredient to cache', done => {
@@ -184,6 +189,20 @@ describe('bowl instance', () => {
         }
       })
     });
+
+    it('can fetch and inject CSS', (done) => {
+      bowl.add({ url: 'assets/style.css', key: 'style' })
+      bowl.inject().then(() => {
+        const container = document.getElementById('mocha')
+        const fontSize = window.getComputedStyle(container).fontSize
+        document.querySelector('head style').remove()
+        if (fontSize === '10px') {
+          done()
+        } else {
+          done(new Error())
+        }
+      })
+    })
   })
 
   describe('expire related properties', () => {

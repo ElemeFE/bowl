@@ -107,4 +107,36 @@ describe('utils', () => {
     expect(utils.isCrossOrigin(h, g)).toBe(false)
     expect(utils.isCrossOrigin(i, g)).toBe(false)
   })
+
+  it('can set data object to localStorage and get it and remove it by key', () => {
+    const o = {
+      key: 'test',
+      content: 'test content'
+    }
+    utils.set('test', o)
+    const local = utils.get('test')
+    expect(local.key).toBe('test')
+    expect(local.content).toBe('test content')
+    utils.remove('test')
+    expect(utils.get('test')).toBe(null)
+  })
+
+  it('can get an array of data object from localStorage', () => {
+    const arr = [{
+      key: 'foo',
+      content: 'foo content'
+    }, {
+      key: 'bar',
+      content: 'bar content'
+    }]
+    utils.set(arr[0].key, arr[0])
+    utils.set(arr[1].key, arr[1])
+    const local = utils.get(['foo', 'bar'])
+    expect(local[0].key).toBe('foo')
+    expect(local[0].content).toBe('foo content')
+    expect(local[1].key).toBe('bar')
+    expect(local[1].content).toBe('bar content')
+    utils.remove('foo')
+    utils.remove('bar')
+  })
 })
