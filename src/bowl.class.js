@@ -1,7 +1,9 @@
 import * as utils from './utils'
+import Injector from './injector/injector.class'
 
-let global = window
-let prefix = 'bowl-'
+const global = window
+const prefix = 'bowl-'
+const isSystemDependencyAvailable = global.localStorage && global.Promise
 
 export default class Bowl {
   constructor() {
@@ -11,6 +13,7 @@ export default class Bowl {
       expireWhen: null
     }
     this.ingredients = []
+    this.injector = new Injector(this.config)
   }
 
   /**
@@ -21,7 +24,7 @@ export default class Bowl {
   }
 
   /**
-   * @param {Object, Array} items to be cached, wrapped in supported object structure
+   * @param {Object, Array} items to be cached, wrapped in supported structure
    */
   add(opts) {
     if (!utils.isArray(opts)) {
@@ -35,25 +38,38 @@ export default class Bowl {
     /**
      * take options and return corresponding ingredient
      */
-    let makeIngredient = obj => {
-      obj = utils.merge(this.config, obj, true)
+    const makeIngredient = (opt) => {
+      const option = utils.merge(this.config, opt, true)
       const ingredient = {}
       const now = new Date().getTime()
-      const isUrl = utils.isUrl(obj.url)
-      ingredient.key = `${prefix}${obj.key || obj.url}`
-      ingredient.expire = obj.expireAfter ? (new Date()).getTime() + obj.expireAfter : null
-      // overwrites `expireAfter` if `expireWhen` is provided
-      ingredient.expire = obj.expireWhen ? obj.expireWhen : ingredient.expire
-      ingredient.noCache = !!obj.noCache
+      const isUrl = utils.isUrl(option.url)
+      const extRE = /\.(\w+)(\?.+)?$/i;
+
+      ingredient.key = `${prefix}${option.key || option.url}`
+
+      ingredient.expireAfter = option.expireAfter
+      ingredient.expireWhen = option.expireWhen
+
       ingredient.url = isUrl ?
-        obj.url :
-        `${global.location.origin}/${obj.url.replace(new RegExp('^\/*'), '')}`
+        option.url :
+        `${global.location.origin}/${option.url.replace(new RegExp('^\/*'), '')}`
+
+      if (!isSystemDependencyAvailable) {
+        ingredient.noCache = true
+      } else {
+        ingredient.noCache = !!option.noCache
+        if (utils.isCrossOrigin(global.location.origin, ingredient.url)) {
+          ingredient.noCache = true
+        }
+      }
+
+      const match = ingredient.url.match(extRE)
+      ingredient.ext = match ? match[1] : match
+
       return ingredient
     }
 
-    const self = this
-
-    let handle = obj => {
+    const handle = (obj) => {
       if (!obj.url) return
       const ingredient = makeIngredient(obj)
       const existingIndexFound = this.ingredients.findIndex(item => {
@@ -63,7 +79,7 @@ export default class Bowl {
         this.ingredients.splice(existingIndexFound, 1, ingredient)
         return
       }
-      self.ingredients.push(ingredient)
+      this.ingredients.push(ingredient)
     }
 
     opts.forEach(opt => handle(opt))
@@ -84,79 +100,10 @@ export default class Bowl {
 
   inject() {
     if (!this.ingredients.length) return false
-    const self = this
-    const current = new Date().getTime()
-    let ingredientsPromises = []
-    if (!global.localStorage || !global.Promise) {
-      this.ingredients.forEach(item => {
-        this.normalInject(item.url)
-      })
-      return
-    }
-
-    let fetch = url => {
-      let xhr = new XMLHttpRequest()
-      let promise = new Promise((resolve, reject) => {
-        xhr.open('GET', url)
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            if ((xhr.status === 200) || ((xhr.status === 0) && xhr.responseText)) {
-              resolve({
-                content: xhr.responseText
-              })
-            } else {
-              reject(new Error(xhr.statusText))
-            }
-          }
-        }
-      })
-      setTimeout(function() {
-        if (xhr.readyState < 4) {
-          xhr.abort()
-        }
-      }, self.config.timeout)
-      xhr.send()
-      return promise
-    }
-
-    let _inject = (item, resolve, reject) => {
-      fetch(item.url).then(data => {
-        item.content = data.content
-        this.appendScript(data.content)
-        localStorage.setItem(item.key, JSON.stringify(item))
-        resolve()
-      }).catch(err => {
-        reject()
-      })
-    }
+    const ingredientsPromises = []
 
     this.ingredients.forEach(item => {
-      ingredientsPromises.push(new Promise((resolve, reject) => {
-        if (item.noCache) {
-          this.normalInject(item.url)
-          resolve()
-          return
-        }
-
-        let local = JSON.parse(localStorage.getItem(item.key))
-        // check local ingredient's expire property
-        if (local && local.expire) {
-          if (current < local.expire) {
-            resolve()
-            return
-          } else {
-            _inject(item, resolve, reject)
-            return
-          }
-        }
-
-        if (local && (local.url === item.url)) { // cache hit!
-          this.appendScript(local.content)
-          resolve()
-        } else { // fetch resource and cache ingredient
-          _inject(item, resolve, reject)
-        }
-      }))
+      ingredientsPromises.push(this.injector.inject(item))
     })
     return Promise.all(ingredientsPromises)
   }
@@ -164,7 +111,7 @@ export default class Bowl {
   remove(rule) {
     if (!rule) {
       let keys = this.ingredients.map(item => item.key)
-      keys.forEach(key => this._removeStorage(key))
+      keys.forEach(key => utils.remove(key))
       this.ingredients = []
       return
     }
@@ -176,11 +123,7 @@ export default class Bowl {
     }
     const index = this.ingredients.findIndex(item => item.key === key)
     this.ingredients.splice(index, 1)
-    localStorage.removeItem(key)
-  }
-
-  _removeStorage(key) {
-    localStorage.removeItem(key)
+    utils.remove(key)
   }
 
 }

@@ -1,3 +1,5 @@
+const global = window
+
 /**
  * check if the argument is an instance of Object
  */
@@ -72,4 +74,73 @@ export function merge(target, source, force = false) {
     }
   }
   return result
+}
+
+/**
+ * test if two urls are cross-origin
+ */
+export function isCrossOrigin(hostUrl, targetUrl) {
+  const originRegExp = /^(https?:\/\/)?([^\/:]+)?:?(\d+)?/
+  const defaultProtocol = 'http://'
+  const defaultPort = '80'
+  const hostOrigin = hostUrl.match(originRegExp)
+  const targetOrigin = targetUrl.match(originRegExp)
+
+  // if urls don't have protocols, add default protocols to them
+  ;[hostOrigin[1], hostOrigin[2], hostOrigin[3]] = [
+    hostOrigin[1] ? hostOrigin[1] : defaultProtocol,
+    hostOrigin[2] ? hostOrigin[2] : location.hostname,
+    hostOrigin[3] ? hostOrigin[3] : defaultPort
+  ]
+  if (!targetOrigin[3]) {
+    if (targetOrigin[2]) {
+      targetOrigin[3] = defaultPort
+    } else {
+      targetOrigin[3] = hostOrigin[3]
+    }
+  }
+  ;[targetOrigin[1], targetOrigin[2]] = [
+    targetOrigin[1] ? targetOrigin[1] : hostOrigin[1],
+    targetOrigin[2] ? targetOrigin[2] : hostOrigin[2]
+  ]
+  hostOrigin[0] = `${hostOrigin[1]}${hostOrigin[2]}:${hostOrigin[3]}`
+  targetOrigin[0] = `${targetOrigin[1]}${targetOrigin[2]}:${targetOrigin[3]}`
+  return hostOrigin[0] !== targetOrigin[0]
+}
+
+const storage = global.localStorage
+/**
+ * get item from local storage
+ */
+export function get(key) {
+  if (isString(key)) {
+    return JSON.parse(storage.getItem(key))
+  }
+  if (isArray(key)) {
+    return key.map(k => JSON.parse(storage.getItem(k)))
+  }
+}
+
+/**
+ * [set description]
+ * @param {String} key key of the object to be cached
+ * @param {Object} o   object to be cached
+ */
+export function set(key, o) {
+  if (!isObject(o)) {
+    return
+  }
+  storage.setItem(key, JSON.stringify(o))
+}
+
+/**
+ * remove data object from cache
+ */
+export function remove(key) {
+  if (isString(key)) {
+    return storage.removeItem(key)
+  }
+  if (isArray(key)) {
+    return key.forEach(k => storage.removeItem(k))
+  }
 }
