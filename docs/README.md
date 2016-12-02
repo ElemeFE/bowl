@@ -6,8 +6,6 @@
   <a href="https://www.npmjs.com/package/bowl.js"><img src="https://img.shields.io/npm/l/bowl.js.svg" alt="License"></a>
 </p>
 
-[中文文档](https://github.com/ElemeFE/bowl.js/blob/master/README-CN.md)
-
 # bowl.js
 **bowl** is a loader that caches scripts and stylesheets with localStorage. After receiving any scripts or stylesheets, this tiny JavaScript library will save them to the browser's localStorage. When the file is requested next time, bowl will read it from localStorage and inject it to the webpage.
 

@@ -10,7 +10,7 @@
 > 🍚 static resources front-end storage solving strategy
 
 ## Links
-+ [Documentation]()
++ [Documentation](https://elemefe.github.io/bowl/)
 
 ## Quick Start
 For those scripts that need to be cached, you do not have to insert `script` tags to the pages. Just write a little piece of JavaScript and **bowl** will take care of it.
@@ -24,7 +24,7 @@ bowl.add([
 bowl.inject()
 </script>
 ```
-**bowl** will add these scripts to cache(currently localStorage). whenever the hashes in the filenames get modified, bowl will update the files in the cache. For more useful functions of **bowl**, just checkout the [API document]().
+**bowl** will add these scripts to cache(currently localStorage). whenever the hashes in the filenames get modified, bowl will update the files in the cache. For more useful functions of **bowl**, just checkout the [API document](https://elemefe.github.io/bowl/).
 
 ## Development Setup
 After cloning the repo, run:

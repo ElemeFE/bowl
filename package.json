@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/elemefe/bowl.js.git"
+    "url": "git+https://github.com/elemefe/bowl.git"
   },
   "author": "classicemi <wushuang_1227@163.com> (https://github.com/classicemi)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/classicemi/bowl.js/issues"
+    "url": "https://github.com/classicemi/bowl/issues"
   },
-  "homepage": "https://github.com/classicemi/bowl.js#readme",
+  "homepage": "https://elemefe.github.io/bowl/",
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-loader": "^6.2.7",
