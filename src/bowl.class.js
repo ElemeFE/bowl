@@ -12,7 +12,14 @@ export default class Bowl {
       expireAfter: null,
       expireWhen: null
     }
-    this.ingredients = []
+    const ingredients = []
+    Object.defineProperty(this, 'ingredients', {
+      __proto__: null,
+      configurable: true,
+      get() {
+        return ingredients
+      }
+    })
     this.injector = new Injector(this.config)
   }
 
@@ -29,7 +36,7 @@ export default class Bowl {
   add(opts) {
     if (!utils.isArray(opts)) {
       if (utils.isObject(opts)) {
-        opts = [ opts ]
+        opts = [opts]
       } else {
         return
       }
@@ -43,7 +50,7 @@ export default class Bowl {
       const ingredient = {}
       const now = new Date().getTime()
       const isUrl = utils.isUrl(option.url)
-      const extRE = /\.(\w+)(\?.+)?$/i;
+      const extRE = /\.(\w+)(\?.+)?$/i
 
       ingredient.key = `${prefix}${option.key || option.url}`
 
@@ -70,7 +77,14 @@ export default class Bowl {
     }
 
     const handle = (obj) => {
-      if (!obj.url) return
+      if (!obj.key || !/^[a-zA-z0-9_]+$/.test(obj.key)) {
+        throw new Error('invalid key of bowl ingredient')
+        return
+      }
+      if (!obj.url) {
+        throw new Error('no valid url of bowl ingredient')
+        return
+      }
       const ingredient = makeIngredient(obj)
       const existingIndexFound = this.ingredients.findIndex(item => {
         return item.key === ingredient.key
@@ -111,19 +125,19 @@ export default class Bowl {
   remove(rule) {
     if (!rule) {
       let keys = this.ingredients.map(item => item.key)
-      keys.forEach(key => utils.remove(key))
-      this.ingredients = []
+      keys.forEach(key => this.remove(key))
       return
     }
-    let key = null
     if (utils.isString(rule)) {
-      key = `${prefix}${rule}`
-    } else if (utils.isObject(rule)) {
-      key = `${prefix}${rule.key ? rule.key : rule.url ? rule.url : ''}`
+      const key = `${prefix}${rule}`
+      const index = this.ingredients.findIndex(item => item.key === key)
+      this.ingredients.splice(index, 1)
+      utils.remove(key)
+    } else if (utils.isArray(rule)) {
+      const key = `${prefix}${rule.key ? rule.key : rule.url ? rule.url : ''}`
+      rule.forEach(key => this.remove(key))
+      return
     }
-    const index = this.ingredients.findIndex(item => item.key === key)
-    this.ingredients.splice(index, 1)
-    utils.remove(key)
   }
 
 }

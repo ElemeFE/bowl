@@ -18,13 +18,11 @@ describe('bowl instance', () => {
 
   describe('add method', () => {
     it('adds `scripts` to bowl.ingredient', () => {
-      bowl.add({ url: 'assets/app.js' })
+      bowl.add({
+        key: 'app',
+        url: 'assets/app.js'
+      })
       expect(bowl.ingredients.length).to.be(1)
-    })
-
-    it('converts url to key of the ingredient if not provided', () => {
-      bowl.add({ url: 'assets/app.js' })
-      expect(bowl.ingredients[0].key).to.be('bowl-assets/app.js')
     })
 
     it('jumps out of `bowl.add` if the param is neither array nor object', () => {
@@ -52,29 +50,29 @@ describe('bowl instance', () => {
 
     it('remove all ingredients if no params are provided', () => {
       bowl.add([
-        { url: 'foo' },
-        { url: 'bar' }
+        { key: 'foo', url: 'foo' },
+        { key: 'bar', url: 'bar' }
       ])
       bowl.remove()
       expect(bowl.ingredients.length).to.be(0)
     })
 
-    it('remove the correct item(key is not provided when added) out of ingredients', () => {
-      bowl.add([
-        { url: 'assets/app.js' },
-        { url: 'assets/foo.js' },
-        { url: 'assets/bar.js' }
-      ])
-      bowl.remove('assets/bar.js')
-      expect(bowl.ingredients.length).to.be(2)
-      expect(bowl.ingredients[0].key).to.be('bowl-assets/app.js')
-      expect(bowl.ingredients[1].key).to.be('bowl-assets/foo.js')
-      bowl.remove({ url: 'assets/app.js' })
-      expect(bowl.ingredients.length).to.be(1)
-      expect(bowl.ingredients[0].key).to.be('bowl-assets/foo.js')
-      bowl.remove({ key: 'assets/foo.js' })
-      expect(bowl.ingredients.length).to.be(0)
-    })
+    // it('remove the correct item(key is not provided when added) out of ingredients', () => {
+    //   bowl.add([
+    //     { key: 'app', url: 'assets/app.js' },
+    //     { key: 'foo', url: 'assets/foo.js' },
+    //     { key: 'bar', url: 'assets/bar.js' }
+    //   ])
+    //   bowl.remove('assets/bar.js')
+    //   expect(bowl.ingredients.length).to.be(2)
+    //   expect(bowl.ingredients[0].key).to.be('bowl-assets/app.js')
+    //   expect(bowl.ingredients[1].key).to.be('bowl-assets/foo.js')
+    //   bowl.remove({ url: 'assets/app.js' })
+    //   expect(bowl.ingredients.length).to.be(1)
+    //   expect(bowl.ingredients[0].key).to.be('bowl-assets/foo.js')
+    //   bowl.remove({ key: 'assets/foo.js' })
+    //   expect(bowl.ingredients.length).to.be(0)
+    // })
 
     it('remove the correct item(key is provided when added) out of ingredients', () => {
       bowl.add([
@@ -86,19 +84,9 @@ describe('bowl instance', () => {
       expect(bowl.ingredients.length).to.be(2)
       expect(bowl.ingredients[0].key).to.be('bowl-foo')
       expect(bowl.ingredients[1].key).to.be('bowl-bar')
-      bowl.remove({ key: 'foo' })
+      bowl.remove(['foo'])
       expect(bowl.ingredients.length).to.be(1)
       expect(bowl.ingredients[0].key).to.be('bowl-bar')
-    })
-
-    it('`key`\'s priority is higher than `url`', () => {
-      bowl.add([
-        { url: 'assets/app.js' },
-        { url: 'assets/foo.js' }
-      ])
-      bowl.remove({ url: 'assets/app.js', key: 'foo' })
-      expect(bowl.ingredients.length).to.be(1)
-      expect(bowl.ingredients[0].key).to.be('bowl-assets/app.js')
     })
   })
 
@@ -116,14 +104,14 @@ describe('bowl instance', () => {
     })
 
     it('returns a promise if there is any ingredient', () => {
-      bowl.add({ url: 'assets/app.js' })
+      bowl.add({ key: 'app', url: 'assets/app.js' })
       expect(bowl.inject() instanceof Promise).to.be(true)
     })
 
     it('fetches the script added to bowl and save it to localStorage', done => {
-      bowl.add({ url: 'assets/app.js' })
+      bowl.add({ key: 'app', url: 'assets/app.js' })
       bowl.inject().then(() => {
-        const item = JSON.parse(localStorage.getItem('bowl-assets/app.js'))
+        const item = JSON.parse(localStorage.getItem('bowl-app'))
         if (item.content.trim() === 'console.log(\'app.js\')') {
           done()
         } else {
@@ -134,12 +122,12 @@ describe('bowl instance', () => {
 
     it('fetches mutiple scripts added to bowl and save them to localStorage', done => {
       bowl.add([
-        { url: 'assets/app.js' },
-        { url: 'assets/foo.js' }
+        { key: 'app', url: 'assets/app.js' },
+        { key: 'foo', url: 'assets/foo.js' }
       ])
       bowl.inject().then(() => {
-        const app = JSON.parse(localStorage.getItem('bowl-assets/app.js'))
-        const foo = JSON.parse(localStorage.getItem('bowl-assets/foo.js'))
+        const app = JSON.parse(localStorage.getItem('bowl-app'))
+        const foo = JSON.parse(localStorage.getItem('bowl-foo'))
         if (app.content.trim() === 'console.log(\'app.js\')' &&
             foo.content.trim() === 'console.log(\'foo.js\')') {
           done()
@@ -151,7 +139,7 @@ describe('bowl instance', () => {
 
     it('insert all ingredients to the page', done => {
       bowl.add([
-        { url: 'assets/app.js' }
+        { key: 'app', url: 'assets/app.js' }
       ])
       bowl.inject().then(() => {
         const script = document.querySelector('head script[defer]')
