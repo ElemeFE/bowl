@@ -1,5 +1,6 @@
 import * as utils from './utils'
 import Injector from './injector/injector.class'
+import Graph from './graph.class'
 
 const global = window
 const prefix = 'bowl-'
@@ -73,6 +74,8 @@ export default class Bowl {
       const match = ingredient.url.match(extRE)
       ingredient.ext = match ? match[1] : match
 
+      ingredient.dependencies = option.dependencies
+
       return ingredient
     }
 
@@ -99,27 +102,35 @@ export default class Bowl {
     opts.forEach(opt => handle(opt))
   }
 
-  normalInject(url) {
-    let script = document.createElement('script')
-    script.src = url
-    document.body.appendChild(script)
-  }
-
-  appendScript(content) {
-    const script = document.createElement('script')
-    script.defer = true
-    script.text = content
-    document.getElementsByTagName('head')[0].appendChild(script)
-  }
-
   inject() {
     if (!this.ingredients.length) return false
-    const ingredientsPromises = []
 
+    const ingredientsGraph = new Graph()
+    this.ingredients.forEach(item => ingredientsGraph.addVertex(item.key))
     this.ingredients.forEach(item => {
-      ingredientsPromises.push(this.injector.inject(item))
+      if (item.dependencies && item.dependencies.length) {
+        item.dependencies.forEach(dep => {
+          ingredientsGraph.addEdge(`${prefix}${dep}`, item.key)
+        })
+      }
     })
-    return Promise.all(ingredientsPromises)
+    const resolvedIngredients = ingredientsGraph.getBFS()
+
+    const batchFetch = (group) => {
+      const fetches = []
+      group.forEach(item => {
+        fetches.push(this.injector.inject(this.ingredients.find(ingredient => ingredient.key === item)))
+      })
+      return Promise.all(fetches)
+    }
+
+    let ret = Promise.resolve()
+    resolvedIngredients.forEach(group => {
+      ret = ret.then(function() {
+        return batchFetch(group)
+      })
+    })
+    return ret
   }
 
   remove(rule) {

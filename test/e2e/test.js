@@ -1,4 +1,6 @@
 window.aFlag = 0
+window.bFlag = 0
+window.cFlag = 0
 
 describe('bowl instance', () => {
   let bowl = new Bowl()
@@ -19,27 +21,27 @@ describe('bowl instance', () => {
   describe('add method', () => {
     it('adds `scripts` to bowl.ingredient', () => {
       bowl.add({
-        key: 'app',
-        url: 'assets/app.js'
+        key: 'a',
+        url: 'assets/a.js'
       })
       expect(bowl.ingredients.length).to.be(1)
     })
 
     it('jumps out of `bowl.add` if the param is neither array nor object', () => {
-      bowl.add('assets/app.js')
+      bowl.add('assets/a.js')
       expect(bowl.ingredients.length).to.be(0)
     })
 
     it('uses `key` if provided', () => {
-      bowl.add({ url: 'assets/app.js', key: 'app' })
-      expect(bowl.ingredients[0].key).to.be('bowl-app')
+      bowl.add({ url: 'assets/a.js', key: 'a' })
+      expect(bowl.ingredients[0].key).to.be('bowl-a')
     })
 
     it('overwrites the older ingredient if two ingredients have a same key', () => {
-      bowl.add({ url: 'assets/app.js', key: 'test' })
-      bowl.add({ url: 'assets/foo.js', key: 'test' })
+      bowl.add({ url: 'assets/a.js', key: 'test' })
+      bowl.add({ url: 'assets/b.js', key: 'test' })
       expect(bowl.ingredients.length).to.be(1)
-      expect(/foo\.js$/.test(bowl.ingredients[0].url)).to.be(true)
+      expect(/b\.js$/.test(bowl.ingredients[0].url)).to.be(true)
     })
   })
 
@@ -56,23 +58,6 @@ describe('bowl instance', () => {
       bowl.remove()
       expect(bowl.ingredients.length).to.be(0)
     })
-
-    // it('remove the correct item(key is not provided when added) out of ingredients', () => {
-    //   bowl.add([
-    //     { key: 'app', url: 'assets/app.js' },
-    //     { key: 'foo', url: 'assets/foo.js' },
-    //     { key: 'bar', url: 'assets/bar.js' }
-    //   ])
-    //   bowl.remove('assets/bar.js')
-    //   expect(bowl.ingredients.length).to.be(2)
-    //   expect(bowl.ingredients[0].key).to.be('bowl-assets/app.js')
-    //   expect(bowl.ingredients[1].key).to.be('bowl-assets/foo.js')
-    //   bowl.remove({ url: 'assets/app.js' })
-    //   expect(bowl.ingredients.length).to.be(1)
-    //   expect(bowl.ingredients[0].key).to.be('bowl-assets/foo.js')
-    //   bowl.remove({ key: 'assets/foo.js' })
-    //   expect(bowl.ingredients.length).to.be(0)
-    // })
 
     it('remove the correct item(key is provided when added) out of ingredients', () => {
       bowl.add([
@@ -92,6 +77,8 @@ describe('bowl instance', () => {
 
   describe('inject method', () => {
     beforeEach(() => {
+      window.aFlag = 0
+      window.bFlag = 0
       localStorage.clear()
       const scripts = document.querySelectorAll('head script[defer]')
       scripts.forEach(script => {
@@ -103,16 +90,17 @@ describe('bowl instance', () => {
       expect(bowl.inject()).to.be(false)
     })
 
-    it('returns a promise if there is any ingredient', () => {
-      bowl.add({ key: 'app', url: 'assets/app.js' })
-      expect(bowl.inject() instanceof Promise).to.be(true)
+    it('returns a promise if there is any ingredient', (done) => {
+      bowl.add({ key: 'a', url: 'assets/a.js' })
+      const returnValue = bowl.inject()
+      expect(returnValue instanceof Promise).to.be(true)
+      returnValue.then(() => done())
     })
 
-    it('fetches the script added to bowl and save it to localStorage', done => {
-      bowl.add({ key: 'app', url: 'assets/app.js' })
+    it('fetches the script added to bowl and save it to localStorage', (done) => {
+      bowl.add({ key: 'a', url: 'assets/a.js' })
       bowl.inject().then(() => {
-        const item = JSON.parse(localStorage.getItem('bowl-app'))
-        if (item.content.trim() === 'console.log(\'app.js\')') {
+        if (window.aFlag === 1) {
           done()
         } else {
           done(new Error())
@@ -120,16 +108,16 @@ describe('bowl instance', () => {
       })
     })
 
-    it('fetches mutiple scripts added to bowl and save them to localStorage', done => {
+    it('fetches mutiple scripts added to bowl and save them to localStorage', (done) => {
       bowl.add([
-        { key: 'app', url: 'assets/app.js' },
-        { key: 'foo', url: 'assets/foo.js' }
+        { key: 'a', url: 'assets/a.js' },
+        { key: 'b', url: 'assets/b.js' }
       ])
       bowl.inject().then(() => {
-        const app = JSON.parse(localStorage.getItem('bowl-app'))
-        const foo = JSON.parse(localStorage.getItem('bowl-foo'))
-        if (app.content.trim() === 'console.log(\'app.js\')' &&
-            foo.content.trim() === 'console.log(\'foo.js\')') {
+        const a = JSON.parse(localStorage.getItem('bowl-a'))
+        const b = JSON.parse(localStorage.getItem('bowl-b'))
+        if (a.content.trim() === 'window.aFlag++' &&
+            b.content.trim() === 'window.bFlag++') {
           done()
         } else {
           done(new Error())
@@ -137,15 +125,12 @@ describe('bowl instance', () => {
       })
     })
 
-    it('insert all ingredients to the page', done => {
+    it('insert all ingredients to the page', (done) => {
       bowl.add([
-        { key: 'app', url: 'assets/app.js' }
+        { key: 'a', url: 'assets/a.js' }
       ])
       bowl.inject().then(() => {
-        const script = document.querySelector('head script[defer]')
-        const text = script.innerText
-
-        if (text.trim() === 'console.log(\'app.js\')') {
+        if (window.aFlag === 1) {
           done()
         } else {
           done(new Error())
@@ -154,9 +139,9 @@ describe('bowl instance', () => {
     })
 
     it('won\'t cache ingredient if it has `noCache` flag', (done) => {
-      bowl.add({ url: 'assets/app.js', key: 'app', noCache: true })
+      bowl.add({ url: 'assets/a.js', key: 'a', noCache: true })
       bowl.inject().then(() => {
-        if (localStorage.getItem('bowl-app') === null) {
+        if (localStorage.getItem('bowl-a') === null && window.aFlag === 1) {
           done()
         } else {
           done(new Error())
@@ -164,7 +149,7 @@ describe('bowl instance', () => {
       })
     })
 
-    it('can fetch and save cross-origin ingredient to cache', done => {
+    it('can fetch and save cross-origin ingredient to cache', (done) => {
       const hostname = location.hostname
       const targetHostName = hostname === '127.0.0.1' ? 'localhost' : '127.0.0.1'
       bowl.add({ url: `http://${targetHostName}:8080/assets/a.js`, key: 'a' })
@@ -191,6 +176,28 @@ describe('bowl instance', () => {
         }
       })
     })
+
+    it('injects ingredient\'s dependencies', (done) => {
+      bowl.add([{
+        key: 'a',
+        url: 'assets/a.js',
+        dependencies: ['c']
+      }, {
+        key: 'b',
+        url: 'assets/b.js'
+      }, {
+        key: 'c',
+        url: 'assets/c.js',
+        dependencies: ['b']
+      }])
+      bowl.inject().then(() => {
+        if (window.aFlag === 1 && window.bFlag === 1 && window.cFlag === 1) {
+          done()
+        } else {
+          done(new Error())
+        }
+      })
+    })
   })
 
   describe('expire related properties', () => {
@@ -201,10 +208,14 @@ describe('bowl instance', () => {
         script.remove()
       })
     })
+    afterEach(() => {
+      window.aFlag = 0
+      window.bFlag = 0
+    })
 
     it('ingredients expires after `expireAfter` time passed', done => {
       bowl.add({
-        url: 'assets/app.js',
+        url: 'assets/a.js',
         expireAfter: 500,
         key: 'test'
       })
@@ -217,7 +228,7 @@ describe('bowl instance', () => {
         const originIngredient = JSON.parse(localStorage.getItem('bowl-test'))
         const originExpire = originIngredient.expire
         bowl.add({
-          url: 'assets/app.js',
+          url: 'assets/a.js',
           expireAfter: 600,
           key: 'test'
         })
@@ -242,7 +253,7 @@ describe('bowl instance', () => {
 
     it('ingredients expires after `expireWhen`', done => {
       bowl.add({
-        url: 'assets/app.js',
+        url: 'assets/a.js',
         expireWhen: (new Date()).getTime() + 500,
         key: 'test'
       })
@@ -255,7 +266,7 @@ describe('bowl instance', () => {
         const originIngredient = JSON.parse(localStorage.getItem('bowl-test'))
         const originExpire = originIngredient.expire
         bowl.add({
-          url: 'assets/app.js',
+          url: 'assets/a.js',
           expireWhen: (new Date()).getTime() + 600,
           key: 'test'
         })
