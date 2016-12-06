@@ -7,6 +7,11 @@ describe('bowl instance', () => {
 
   beforeEach(() => {
     bowl = new Bowl()
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    localStorage.clear()
   })
 
   describe('config method', () => {
@@ -79,7 +84,6 @@ describe('bowl instance', () => {
     beforeEach(() => {
       window.aFlag = 0
       window.bFlag = 0
-      localStorage.clear()
       const scripts = document.querySelectorAll('head script[defer]')
       scripts.forEach(script => {
         script.remove()
@@ -202,7 +206,6 @@ describe('bowl instance', () => {
 
   describe('expire related properties', () => {
     beforeEach(() => {
-      localStorage.clear()
       const scripts = document.querySelectorAll('head script[defer]')
       scripts.forEach(script => {
         script.remove()
