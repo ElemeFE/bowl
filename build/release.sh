@@ -21,7 +21,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   npm version $VERSION --message "[release] $VERSION"
 
   # publish
-  git push origin refs/tags/v$VERSION
-  git push
+  git push eleme refs/tags/v$VERSION
+  git push eleme master
   npm publish
 fi
