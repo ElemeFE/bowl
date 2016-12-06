@@ -1,5 +1,6 @@
 import * as utils from './utils'
 import Injector from './injector/injector.class'
+import Graph from './graph.class'
 
 const global = window
 const prefix = 'bowl-'
@@ -12,7 +13,14 @@ export default class Bowl {
       expireAfter: null,
       expireWhen: null
     }
-    this.ingredients = []
+    const ingredients = []
+    Object.defineProperty(this, 'ingredients', {
+      __proto__: null,
+      configurable: true,
+      get() {
+        return ingredients
+      }
+    })
     this.injector = new Injector(this.config)
   }
 
@@ -29,7 +37,7 @@ export default class Bowl {
   add(opts) {
     if (!utils.isArray(opts)) {
       if (utils.isObject(opts)) {
-        opts = [ opts ]
+        opts = [opts]
       } else {
         return
       }
@@ -43,7 +51,7 @@ export default class Bowl {
       const ingredient = {}
       const now = new Date().getTime()
       const isUrl = utils.isUrl(option.url)
-      const extRE = /\.(\w+)(\?.+)?$/i;
+      const extRE = /\.(\w+)(\?.+)?$/i
 
       ingredient.key = `${prefix}${option.key || option.url}`
 
@@ -66,11 +74,20 @@ export default class Bowl {
       const match = ingredient.url.match(extRE)
       ingredient.ext = match ? match[1] : match
 
+      ingredient.dependencies = option.dependencies
+
       return ingredient
     }
 
     const handle = (obj) => {
-      if (!obj.url) return
+      if (!obj.key || !/^[a-zA-z0-9_]+$/.test(obj.key)) {
+        throw new Error('invalid key of bowl ingredient')
+        return
+      }
+      if (!obj.url) {
+        throw new Error('no valid url of bowl ingredient')
+        return
+      }
       const ingredient = makeIngredient(obj)
       const existingIndexFound = this.ingredients.findIndex(item => {
         return item.key === ingredient.key
@@ -85,45 +102,53 @@ export default class Bowl {
     opts.forEach(opt => handle(opt))
   }
 
-  normalInject(url) {
-    let script = document.createElement('script')
-    script.src = url
-    document.body.appendChild(script)
-  }
-
-  appendScript(content) {
-    const script = document.createElement('script')
-    script.defer = true
-    script.text = content
-    document.getElementsByTagName('head')[0].appendChild(script)
-  }
-
   inject() {
     if (!this.ingredients.length) return false
-    const ingredientsPromises = []
 
+    const ingredientsGraph = new Graph()
+    this.ingredients.forEach(item => ingredientsGraph.addVertex(item.key))
     this.ingredients.forEach(item => {
-      ingredientsPromises.push(this.injector.inject(item))
+      if (item.dependencies && item.dependencies.length) {
+        item.dependencies.forEach(dep => {
+          ingredientsGraph.addEdge(`${prefix}${dep}`, item.key)
+        })
+      }
     })
-    return Promise.all(ingredientsPromises)
+    const resolvedIngredients = ingredientsGraph.getBFS()
+
+    const batchFetch = (group) => {
+      const fetches = []
+      group.forEach(item => {
+        fetches.push(this.injector.inject(this.ingredients.find(ingredient => ingredient.key === item)))
+      })
+      return Promise.all(fetches)
+    }
+
+    let ret = Promise.resolve()
+    resolvedIngredients.forEach(group => {
+      ret = ret.then(function() {
+        return batchFetch(group)
+      })
+    })
+    return ret
   }
 
   remove(rule) {
     if (!rule) {
       let keys = this.ingredients.map(item => item.key)
-      keys.forEach(key => utils.remove(key))
-      this.ingredients = []
+      keys.forEach(key => this.remove(key))
       return
     }
-    let key = null
     if (utils.isString(rule)) {
-      key = `${prefix}${rule}`
-    } else if (utils.isObject(rule)) {
-      key = `${prefix}${rule.key ? rule.key : rule.url ? rule.url : ''}`
+      const key = `${prefix}${rule}`
+      const index = this.ingredients.findIndex(item => item.key === key)
+      this.ingredients.splice(index, 1)
+      utils.remove(key)
+    } else if (utils.isArray(rule)) {
+      const key = `${prefix}${rule.key ? rule.key : rule.url ? rule.url : ''}`
+      rule.forEach(key => this.remove(key))
+      return
     }
-    const index = this.ingredients.findIndex(item => item.key === key)
-    this.ingredients.splice(index, 1)
-    utils.remove(key)
   }
 
 }

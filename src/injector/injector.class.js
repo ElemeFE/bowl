@@ -20,8 +20,12 @@ export default class Injector {
 
     if (local && o.url === local.url && (!local.expire || current < local.expire)) { // hit
       return new Promise((resolve, reject) => {
-        this.appendToPage(ext, local.content)
-        resolve()
+        try {
+          this.appendToPage(ext, local.content)
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
       })
     } else {
       return new Promise((resolve, reject) => {

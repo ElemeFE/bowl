@@ -1,1 +1,1 @@
-window.aFlag = 1
+window.aFlag++
