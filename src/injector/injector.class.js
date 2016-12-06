@@ -30,7 +30,7 @@ export default class Injector {
     } else {
       return new Promise((resolve, reject) => {
         this.fetchByXHR(o.url).then((data) => {
-          o.content = data.content.replace(/\s/g, '')
+          o.content = data.content
           utils.set(o.key, o)
           this.appendToPage(ext, o.content)
           resolve()
