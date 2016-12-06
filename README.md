@@ -10,6 +10,9 @@
 ## Links
 + [Documentation](https://elemefe.github.io/bowl/)
 
+## Screenshot
+![](https://raw.githubusercontent.com/classicemi/bowl/develop/assets/demo.gif)
+
 ## Quick Start
 For those resources that need to be cached, you do not have to insert `script` tags to the pages. Just write a little piece of JavaScript and **bowl** will take care of it.
 ```html

@@ -64,7 +64,7 @@ $ npm run build
 + **`src`**: source code directory.
 
 ## API
-**bowl** will add a property named `bowl` to the global object, which is `window` in browsers. Bowl has several methods for you.
+**bowl** will add a class named `Bowl` to the global object, which is `window` in browsers. Bowl instance has several methods for you.
 *localStorage and Promise are required by bowl. You can use a Promise Polyfill if your project needs to be compatible with browsers that do not support Promise.*
 
 ### `bowl.configure`

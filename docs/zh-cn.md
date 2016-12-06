@@ -65,7 +65,7 @@ $ npm run build
 + **`src`**: 源代码目录。
 
 ## API
-**bowl** 将会在全局对象上添加一个 `bowl` 属性，在浏览器环境中是在 window 对象上。Bowl 包含了一些方法供你使用。  
+**bowl** 将会在全局对象上添加一个 `Bowl` 类，在浏览器环境中是在 window 对象上。Bowl 的实例包含了一些方法供你使用。  
 *bowl 的正常运行需要 localStorage 和 Promise 的支持，如果你的项目需要兼容不支持 Promise 的浏览器，你可以使用 Promise 的 Polyfill，在全局对象上添加 Promise 属性供 bowl 识别即可。*
 
 ### `bowl.configure`
