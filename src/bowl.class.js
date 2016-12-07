@@ -103,7 +103,7 @@ export default class Bowl {
   }
 
   inject() {
-    if (!this.ingredients.length) return false
+    if (!this.ingredients.length) return Promise.resolve()
 
     const ingredientsGraph = new Graph()
     this.ingredients.forEach(item => ingredientsGraph.addVertex(item.key))
@@ -135,7 +135,7 @@ export default class Bowl {
 
   remove(rule) {
     if (!rule) {
-      let keys = this.ingredients.map(item => item.key)
+      let keys = this.ingredients.map(item => item.key.replace(new RegExp(`^${prefix}`, 'i'), ''))
       keys.forEach(key => this.remove(key))
       return
     }

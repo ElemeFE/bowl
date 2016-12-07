@@ -62,6 +62,8 @@ describe('bowl instance', () => {
       ])
       bowl.remove()
       expect(bowl.ingredients.length).to.be(0)
+      expect(localStorage.getItem('bowl-foo')).to.be(null)
+      expect(localStorage.getItem('bowl-bar')).to.be(null)
     })
 
     it('remove the correct item(key is provided when added) out of ingredients', () => {
@@ -90,8 +92,14 @@ describe('bowl instance', () => {
       })
     })
 
-    it('returns false if there is no ingredients', () => {
-      expect(bowl.inject()).to.be(false)
+    it('returns false if there is no ingredients', (done) => {
+      try {
+        bowl.inject().then(() => {
+          done()
+        })
+      } catch (err) {
+        done(err)
+      }
     })
 
     it('returns a promise if there is any ingredient', (done) => {
@@ -293,4 +301,23 @@ describe('bowl instance', () => {
     })
   })
 
+  // describe('html tags support', (done) => {
+  //   it('supports `link` tags that inject stylesheet', () => {
+  //     const head = document.getElementsByTagName('head')[0]
+  //     const link = document.createElement('link')
+  //     link.setAttribute('bowl-url', 'assets/style.css')
+  //     link.setAttribute('bowl-key', 'style')
+  //     head.appendChild(link)
+  //     bowl.inject().then(() => {
+  //       const container = document.getElementById('mocha')
+  //       const fontSize = window.getComputedStyle(container).fontSize
+  //       document.querySelector('head style').remove()
+  //       if (fontSize === '10px') {
+  //         done()
+  //       } else {
+  //         done(new Error())
+  //       }
+  //     })
+  //   })
+  // })
 })
