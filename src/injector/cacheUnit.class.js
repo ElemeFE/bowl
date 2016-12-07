@@ -1,4 +1,4 @@
-export default CacheUnit {
+export default class CacheUnit {
   constructor(ingredient) {
     this.key = ingredient.key
     this.url = ingredient.url

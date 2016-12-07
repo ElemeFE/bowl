@@ -1,4 +1,5 @@
 import * as utils from '../utils'
+import Unit from './cacheUnit.class'
 
 export default class Injector {
   constructor(config) {
@@ -31,7 +32,8 @@ export default class Injector {
       return new Promise((resolve, reject) => {
         this.fetchByXHR(o.url).then((data) => {
           o.content = data.content
-          utils.set(o.key, o)
+          const unit = new Unit(o)
+          utils.set(unit.key, unit)
           this.appendToPage(ext, o.content)
           resolve()
         }).catch(err => reject(err))
