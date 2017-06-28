@@ -6,13 +6,14 @@ export default class Injector {
     this.config = config
   }
 
-  inject(o) {
+  inject(o,index) {
     if (o.noCache) {
       return this.normalInject(o)
     }
 
     const local = utils.get(o.key)
     const ext = o.ext
+    
 
     const current = new Date().getTime()
     let expire = o.expireAfter ? (new Date()).getTime() + o.expireAfter : null
@@ -22,7 +23,7 @@ export default class Injector {
     if (local && o.url === local.url && (!local.expire || current < local.expire)) { // hit
       return new Promise((resolve, reject) => {
         try {
-          this.appendToPage(ext, local.content)
+          scriptList.push({"index":index,"ext":ext,"content":local.content});
           resolve()
         } catch (err) {
           reject(err)
@@ -34,7 +35,7 @@ export default class Injector {
           o.content = data.content
           const unit = new Unit(o)
           utils.set(unit.key, unit)
-          this.appendToPage(ext, o.content)
+          scriptList.push({"index":index,"ext":ext,"content":o.content});
           resolve()
         }).catch(err => reject(err))
       })
@@ -112,7 +113,8 @@ export default class Injector {
     })
     setTimeout(() => {
       if (xhr.readyState < 4) {
-        xhr.abort()
+        xhr.abort();
+        reject(new Error('请求中断!'))
       }
     }, this.config.timeout)
     xhr.send()
