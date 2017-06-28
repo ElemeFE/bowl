@@ -5,7 +5,7 @@ import Graph from './graph.class'
 const global = window
 const prefix = 'bowl-'
 const isSystemDependencyAvailable = global.localStorage && global.Promise
-
+window.scriptList = []; //如果不使用window,编译出来会是 scriptList$1
 export default class Bowl {
   constructor() {
     this.config = {
@@ -103,6 +103,7 @@ export default class Bowl {
   }
 
   inject() {
+    let me = this;
     if (!this.ingredients.length) return Promise.resolve()
 
     const ingredientsGraph = new Graph()
@@ -118,8 +119,8 @@ export default class Bowl {
 
     const batchFetch = (group) => {
       const fetches = []
-      group.forEach(item => {
-        fetches.push(this.injector.inject(this.ingredients.find(ingredient => ingredient.key === item)))
+      group.forEach((item ,index ) => {
+        fetches.push(this.injector.inject(this.ingredients.find(ingredient => ingredient.key === item),index))
       })
       return Promise.all(fetches)
     }
@@ -128,6 +129,20 @@ export default class Bowl {
     resolvedIngredients.forEach(group => {
       ret = ret.then(function() {
         return batchFetch(group)
+        .then(function(){
+          var index = 0;
+          var temp = null;
+          while (scriptList.length) {
+            temp = scriptList.shift();
+            if (typeof temp !== 'undefined' && index === temp.index) {
+              index++;
+              me.injector.appendToPage(temp.ext, temp.content);
+            } else {
+              scriptList.push(temp)
+            }
+          }
+          temp = null;
+        })
       })
     })
     return ret
